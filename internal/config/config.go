@@ -24,22 +24,34 @@ const (
 type (
 	// Config holds the application configuration.
 	Config struct {
-		// ServerAddress
+		// ServerAddress specifies the TCP address for the server to listen on,
+		// in the form "host:port".
+		// The default is "localhost:8080".
 		ServerAddress string
 
-		// ServerReadTimeout
+		// ServerReadTimeout is the maximum duration for reading the entire
+		// request, including the body.
+		// The default is "5s".
 		ServerReadTimeout time.Duration
 
-		// ServerReadHeaderTimeout
+		// ServerReadHeaderTimeout is the amount of time allowed to read
+		// request headers.
+		// The default is "2s".
 		ServerReadHeaderTimeout time.Duration
 
-		// ServerWriteTimeout
+		// ServerWriteTimeout is the maximum duration before timing out writes
+		// of the response.
+		// The default is "10s".
 		ServerWriteTimeout time.Duration
 
-		// ServerIdleTimeout
+		// ServerIdleTimeout is the maximum amount of time to wait for the next
+		// request when keep-alives are enabled.
+		// The default is "60s".
 		ServerIdleTimeout time.Duration
 
-		// ServerShutdownTimeout
+		// ServerShutdownTimeout is the maximum duration to wait for a graceful
+		// shutdown.
+		// The default is "15s".
 		ServerShutdownTimeout time.Duration
 	}
 )
