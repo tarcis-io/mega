@@ -7,8 +7,18 @@ import (
 
 const (
 	// Server configuration.
-	serverAddressEnvKey     = "SERVER_ADDRESS"
-	serverAddressEnvDefault = "localhost:8080"
+	serverAddressEnvKey               = "SERVER_ADDRESS"
+	serverAddressEnvDefault           = "localhost:8080"
+	serverReadTimeoutEnvKey           = "SERVER_READ_TIMEOUT"
+	serverReadTimeoutEnvDefault       = "5s"
+	serverReadHeaderTimeoutEnvKey     = "SERVER_READ_HEADER_TIMEOUT"
+	serverReadHeaderTimeoutEnvDefault = "2s"
+	serverWriteTimeoutEnvKey          = "SERVER_WRITE_TIMEOUT"
+	serverWriteTimeoutEnvDefault      = "10s"
+	serverIdleTimeoutEnvKey           = "SERVER_IDLE_TIMEOUT"
+	serverIdleTimeoutEnvDefault       = "60s"
+	serverShutdownTimeoutEnvKey       = "SERVER_SHUTDOWN_TIMEOUT"
+	serverShutdownTimeoutEnvDefault   = "15s"
 )
 
 type (
