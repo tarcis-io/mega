@@ -2,6 +2,7 @@
 package config
 
 import (
+	"os"
 	"time"
 )
 
@@ -55,3 +56,10 @@ type (
 		ServerShutdownTimeout time.Duration
 	}
 )
+
+func getEnv(key, envDefault string) string {
+	if val, found := os.LookupEnv(key); found {
+		return val
+	}
+	return envDefault
+}
