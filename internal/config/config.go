@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
+// Server configuration.
 const (
-	// Server configuration.
 	serverAddressEnvKey               = "SERVER_ADDRESS"
 	serverAddressEnvDefault           = "localhost:8080"
 	serverReadTimeoutEnvKey           = "SERVER_READ_TIMEOUT"
