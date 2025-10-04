@@ -59,6 +59,11 @@ type (
 	}
 )
 
+func New() (*Config, error) {
+	config := &Config{}
+	return config, nil
+}
+
 // getEnv retrieves the value of the environment variable named by the key.
 // It returns the value (which may be empty) if the environment variable is
 // set, otherwise it returns the default value.
