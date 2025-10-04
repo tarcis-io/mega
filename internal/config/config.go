@@ -2,6 +2,7 @@
 package config
 
 import (
+	"net"
 	"os"
 	"time"
 )
@@ -56,6 +57,14 @@ type (
 		ServerShutdownTimeout time.Duration
 	}
 )
+
+// validateHostPort
+func validateHostPort(hostPort string) (string, error) {
+	if _, _, err := net.SplitHostPort(hostPort); err != nil {
+		return "", err
+	}
+	return hostPort, nil
+}
 
 // getEnv retrieves the value of the environment variable named by the key.
 // It returns the default value if the environment variable is not set.
