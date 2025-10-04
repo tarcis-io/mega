@@ -58,8 +58,11 @@ type (
 	}
 )
 
+// getEnv retrieves the value of the environment variable named by the key.
+// It returns the value (which may be empty) if the environment variable is
+// set, otherwise it returns the default value.
 func getEnv(key, defaultValue string) string {
-	if value, found := os.LookupEnv(key); found {
+	if value, isSet := os.LookupEnv(key); isSet {
 		return value
 	}
 	return defaultValue
