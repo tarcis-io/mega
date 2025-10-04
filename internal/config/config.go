@@ -91,7 +91,7 @@ func getParsedEnv[T any](key, defaultValue string, parse func(string) (T, error)
 // On failure, it returns an empty string and the corresponding parsing error.
 func validateHostPort(hostPort string) (string, error) {
 	if _, _, err := net.SplitHostPort(hostPort); err != nil {
-		return "", err
+		return "", fmt.Errorf("invalid \"host:port\": %w", err)
 	}
 	return hostPort, nil
 }
