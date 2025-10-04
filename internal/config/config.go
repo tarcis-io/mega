@@ -69,6 +69,12 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
+// getParsedEnv retrieves the value of the environment variable named by the
+// key and parses it into a specified generic type T.
+// If the environment variable is not set, the default value is used.
+// On success, it returns the parsed value of type T and a nil error.
+// On failure, it returns the zero value of type T and the corresponding
+// parsing error.
 func getParsedEnv[T any](key, defaultValue string, parse func(string) (T, error)) (T, error) {
 	env := getEnv(key, defaultValue)
 	parsedEnv, err := parse(env)
@@ -79,9 +85,9 @@ func getParsedEnv[T any](key, defaultValue string, parse func(string) (T, error)
 	return parsedEnv, nil
 }
 
-// validateHostPort checks if the given string is a valid network address of
+// validateHostPort validates if the given string is a valid network address of
 // the form "host:port".
-// On success, it returns the original input string and a nil error.
+// On success, it returns the original string and a nil error.
 // On failure, it returns an empty string and the corresponding parsing error.
 func validateHostPort(hostPort string) (string, error) {
 	if _, _, err := net.SplitHostPort(hostPort); err != nil {
