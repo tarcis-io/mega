@@ -60,7 +60,8 @@ type (
 
 // validateHostPort checks if the given input string is a valid network address
 // of the form "host:port".
-// It returns an error if the input string is not a valid network address.
+// If it is valid, it returns the input string unchanged.
+// Otherwise, it returns the parse error.
 func validateHostPort(hostPort string) (string, error) {
 	if _, _, err := net.SplitHostPort(hostPort); err != nil {
 		return "", err
