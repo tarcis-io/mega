@@ -58,6 +58,13 @@ type (
 	}
 )
 
+func getEnv(key, defaultValue string) string {
+	if value, found := os.LookupEnv(key); found {
+		return value
+	}
+	return defaultValue
+}
+
 // validateHostPort checks if the given string is a valid network address of
 // the form "host:port".
 // On success, it returns the original input string and a nil error.
@@ -67,13 +74,4 @@ func validateHostPort(hostPort string) (string, error) {
 		return "", err
 	}
 	return hostPort, nil
-}
-
-// getEnv retrieves the value of the environment variable named by the key.
-// It returns the default value if the environment variable is not set.
-func getEnv(key, envDefault string) string {
-	if val, found := os.LookupEnv(key); found {
-		return val
-	}
-	return envDefault
 }
