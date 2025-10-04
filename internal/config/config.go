@@ -68,6 +68,16 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
+func getParsedEnv[T any](key, defaultValue string, parse func(string) (T, error)) (T, error) {
+	env := getEnv(key, defaultValue)
+	parsedEnv, err := parse(env)
+	if err != nil {
+		var zero T
+		return zero, err
+	}
+	return parsedEnv, nil
+}
+
 // validateHostPort checks if the given string is a valid network address of
 // the form "host:port".
 // On success, it returns the original input string and a nil error.
