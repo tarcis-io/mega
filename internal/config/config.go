@@ -41,3 +41,16 @@ type (
 func New() (*Config, error) {
 	return nil, nil
 }
+
+type (
+	// parser
+	parser struct {
+		// errs
+		errs []error
+	}
+)
+
+// newParser
+func newParser() *parser {
+	return &parser{}
+}
