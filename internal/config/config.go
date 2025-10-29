@@ -24,7 +24,7 @@ const (
 )
 
 type (
-	// Config
+	// Config holds the application configuration.
 	Config struct {
 		// LogLevel
 		LogLevel slog.Level
