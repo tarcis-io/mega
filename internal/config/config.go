@@ -27,7 +27,7 @@ type (
 	// Config holds the application configuration.
 	Config struct {
 		// LogLevel specifies the minimum level of log messages to output.
-		// It will be slog.LevelDebug, slog.LevelInfo, slog.LevelWarn,
+		// Valid levels are slog.LevelDebug, slog.LevelInfo, slog.LevelWarn,
 		// slog.LevelError, or a numerical level.
 		// Default: slog.LevelInfo.
 		LogLevel slog.Level
@@ -38,7 +38,7 @@ type (
 		LogFormat string
 
 		// LogOutput specifies the destination of log messages.
-		// It will be os.Stdout, os.Stderr, or an *os.File.
+		// It must be a valid io.Writer.
 		// Default: os.Stdout.
 		LogOutput io.Writer
 	}
