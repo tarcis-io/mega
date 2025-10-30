@@ -4,6 +4,7 @@ package config
 import (
 	"io"
 	"log/slog"
+	"os"
 )
 
 // Supported log formats.
@@ -64,4 +65,13 @@ type (
 // newParser creates and returns a new initialized parser instance.
 func newParser() *parser {
 	return &parser{}
+}
+
+// getEnv retrieves the value of the environment variable named by the key.
+// If the variable is not set, the provided default value is returned.
+func getEnv(key, defaultValue string) string {
+	if val, ok := os.LookupEnv(key); ok {
+		return val
+	}
+	return defaultValue
 }
