@@ -34,12 +34,11 @@ type (
 		LogLevel slog.Level
 
 		// LogFormat specifies the output format of log messages.
-		// It can be either "json" or "text".
-		// Default: "json".
+		// It can be either config.LogFormatJSON or config.LogFormatText.
+		// Default: config.LogFormatJSON.
 		LogFormat string
 
 		// LogOutput specifies the destination of log messages.
-		// It must be a valid io.Writer.
 		// Default: os.Stdout.
 		LogOutput io.Writer
 	}
