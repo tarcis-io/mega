@@ -26,31 +26,42 @@ const (
 type (
 	// Config holds the application configuration.
 	Config struct {
-		// LogLevel
+		// LogLevel specifies the minimum level of log messages to output.
+		// It will be slog.LevelDebug, slog.LevelInfo, slog.LevelWarn,
+		// slog.LevelError, or a numerical level.
+		// Default: slog.LevelInfo.
 		LogLevel slog.Level
 
-		// LogFormat
+		// LogFormat specifies the output format of log messages.
+		// It can be either "json" or "text".
+		// Default: "json".
 		LogFormat string
 
-		// LogOutput
+		// LogOutput specifies the destination of log messages.
+		// It will be os.Stdout, os.Stderr, or an *os.File.
+		// Default: os.Stdout.
 		LogOutput io.Writer
 	}
 )
 
-// New
+// New creates and returns a new Config instance by loading, parsing, and
+// validating the application configuration.
+// It returns a fully initialized Config on success.
+// If any configuration value fails to parse or is invalid, it returns a nil
+// Config and a single error that aggregates all errors found.
 func New() (*Config, error) {
 	return nil, nil
 }
 
 type (
-	// parser
+	// parser is a helper struct for parsing the application configuration.
 	parser struct {
-		// errs
+		// errs holds all errors found during parsing.
 		errs []error
 	}
 )
 
-// newParser
+// newParser creates and returns a new initialized parser instance.
 func newParser() *parser {
 	return &parser{}
 }
