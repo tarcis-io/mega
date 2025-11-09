@@ -58,3 +58,15 @@ const (
 	// Stderr is typically used for error messages.
 	LogOutputStderr LogOutput = "stderr"
 )
+
+const (
+	EnvLogLevel  = "LOG_LEVEL"
+	EnvLogFormat = "LOG_FORMAT"
+	EnvLogOutput = "LOG_OUTPUT"
+)
+
+const (
+	DefaultLogLevel  = LogLevelInfo
+	DefaultLogFormat = LogFormatText
+	DefaultLogOutput = LogOutputStdout
+)
