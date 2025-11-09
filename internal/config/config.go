@@ -45,10 +45,16 @@ const (
 )
 
 type (
+	// LogOutput represents the destination for log messages.
 	LogOutput string
 )
 
 const (
+	// LogOutputStdout defines the standard log output stream (stdout).
+	// Stdout is typically used for general, non-error messages.
 	LogOutputStdout LogOutput = "stdout"
+
+	// LogOutputStderr defines the error log output stream (stderr).
+	// Stderr is typically used for error messages.
 	LogOutputStderr LogOutput = "stderr"
 )
