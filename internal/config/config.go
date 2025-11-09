@@ -28,10 +28,17 @@ const (
 )
 
 type (
+	// LogFormat represents the output format of log messages.
 	LogFormat string
 )
 
 const (
+	// LogFormatText defines the text-based log format.
+	// Text-based are human-readable and typically used for console output.
 	LogFormatText LogFormat = "text"
+
+	// LogFormatJSON defines the JSON-based log format.
+	// JSON-based are machine-readable and typically used for structured
+	// logging.
 	LogFormatJSON LogFormat = "json"
 )
