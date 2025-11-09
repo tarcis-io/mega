@@ -91,6 +91,8 @@ const (
 	DefaultLogOutput = LogOutputStdout
 )
 
+// getEnv retrieves the value of the environment variable with the given name.
+// If the variable is not set, it returns the provided default value.
 func getEnv(name, defaultValue string) string {
 	if val, ok := os.LookupEnv(name); ok {
 		return val
