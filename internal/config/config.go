@@ -26,3 +26,12 @@ const (
 	// Error messages are used to report errors or exceptional conditions.
 	LogLevelError LogLevel = "error"
 )
+
+type (
+	LogFormat string
+)
+
+const (
+	LogFormatText LogFormat = "text"
+	LogFormatJSON LogFormat = "json"
+)
