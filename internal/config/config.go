@@ -2,6 +2,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 )
 
@@ -90,6 +91,27 @@ const (
 	// specified.
 	DefaultLogOutput = LogOutputStdout
 )
+
+type (
+	loader struct {
+		errs []error
+	}
+)
+
+func newLoader() *loader {
+	return &loader{}
+}
+
+func (l *loader) appendError(err error) {
+	l.errs = append(l.errs, err)
+}
+
+func (l *loader) Err() error {
+	if len(l.errs) == 0 {
+		return nil
+	}
+	return errors.Join(l.errs...)
+}
 
 // getEnv retrieves the value of the environment variable with the given name.
 // If the variable is not set, it returns the provided default value.
