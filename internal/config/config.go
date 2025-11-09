@@ -93,19 +93,24 @@ const (
 )
 
 type (
+	// loader is a helper struct for loading the application configuration.
 	loader struct {
+		// errs
 		errs []error
 	}
 )
 
+// newLoader creates and returns a new loader instance.
 func newLoader() *loader {
 	return &loader{}
 }
 
+// appendError adds a new error to the loader's internal slice of errors.
 func (l *loader) appendError(err error) {
 	l.errs = append(l.errs, err)
 }
 
+// Err
 func (l *loader) Err() error {
 	if len(l.errs) == 0 {
 		return nil
