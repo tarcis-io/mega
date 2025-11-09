@@ -43,3 +43,12 @@ const (
 	// structured logging.
 	LogFormatJSON LogFormat = "json"
 )
+
+type (
+	LogOutput string
+)
+
+const (
+	LogOutputStdout LogOutput = "stdout"
+	LogOutputStderr LogOutput = "stderr"
+)
