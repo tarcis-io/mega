@@ -34,11 +34,12 @@ type (
 
 const (
 	// LogFormatText defines the text-based log format.
-	// Text-based are human-readable and typically used for console output.
+	// Text-based formats are human-readable and typically used for console
+	// output.
 	LogFormatText LogFormat = "text"
 
 	// LogFormatJSON defines the JSON-based log format.
-	// JSON-based are machine-readable and typically used for structured
-	// logging.
+	// JSON-based formats are machine-readable and typically used for
+	// structured logging.
 	LogFormatJSON LogFormat = "json"
 )
