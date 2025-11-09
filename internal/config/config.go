@@ -1,6 +1,10 @@
 // Package config loads and provides the application configuration.
 package config
 
+import (
+	"os"
+)
+
 type (
 	// LogLevel represents the severity level of log messages.
 	LogLevel string
@@ -86,3 +90,10 @@ const (
 	// specified.
 	DefaultLogOutput = LogOutputStdout
 )
+
+func getEnv(name, defaultValue string) string {
+	if val, ok := os.LookupEnv(name); ok {
+		return val
+	}
+	return defaultValue
+}
