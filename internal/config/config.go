@@ -60,13 +60,29 @@ const (
 )
 
 const (
-	EnvLogLevel  = "LOG_LEVEL"
+	// EnvLogLevel defines the environment variable name for setting the log
+	// level.
+	EnvLogLevel = "LOG_LEVEL"
+
+	// EnvLogFormat defines the environment variable name for setting the log
+	// format.
 	EnvLogFormat = "LOG_FORMAT"
+
+	// EnvLogOutput defines the environment variable name for setting the log
+	// output.
 	EnvLogOutput = "LOG_OUTPUT"
 )
 
 const (
-	DefaultLogLevel  = LogLevelInfo
+	// DefaultLogLevel defines the default log level used if not otherwise
+	// specified.
+	DefaultLogLevel = LogLevelInfo
+
+	// DefaultLogFormat defines the default log format used if not otherwise
+	// specified.
 	DefaultLogFormat = LogFormatText
+
+	// DefaultLogOutput defines the default log output used if not otherwise
+	// specified.
 	DefaultLogOutput = LogOutputStdout
 )
