@@ -95,7 +95,7 @@ const (
 type (
 	// loader is a helper struct for loading the application configuration.
 	loader struct {
-		// errs
+		// errs holds all the errors encountered during the loading process.
 		errs []error
 	}
 )
@@ -110,7 +110,8 @@ func (l *loader) appendError(err error) {
 	l.errs = append(l.errs, err)
 }
 
-// Err
+// Err returns a single error by joining all the errors recorded by the loader.
+// If there are no errors recorded, it returns nil.
 func (l *loader) Err() error {
 	if len(l.errs) == 0 {
 		return nil
