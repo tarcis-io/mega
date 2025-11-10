@@ -105,6 +105,21 @@ func newLoader() *loader {
 	return &loader{}
 }
 
+// logLevel
+func (l *loader) logLevel() LogLevel {
+	return ""
+}
+
+// logFormat
+func (l *loader) logFormat() LogFormat {
+	return ""
+}
+
+// logOutput
+func (l *loader) logOutput() LogOutput {
+	return ""
+}
+
 // appendError adds a new error to the loader's internal slice of errors.
 func (l *loader) appendError(err error) {
 	l.errs = append(l.errs, err)
