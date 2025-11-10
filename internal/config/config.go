@@ -131,7 +131,15 @@ func (l *loader) logFormat() LogFormat {
 
 // logOutput
 func (l *loader) logOutput() LogOutput {
-	return ""
+	env := getEnv(EnvLogOutput, string(DefaultLogOutput))
+	switch val := LogOutput(strings.ToLower(env)); val {
+	case LogOutputStdout, LogOutputStderr:
+		return val
+	case "":
+		l.appendError(fmt.Errorf("invalid log output (%s) got=%q", EnvLogOutput, env))
+		return ""
+	}
+	return LogOutput(env)
 }
 
 // appendError adds a new error to the loader's internal slice of errors.
