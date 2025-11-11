@@ -108,7 +108,10 @@ type (
 	}
 )
 
-// New
+// New creates and returns a new Config instance by loading and validating the
+// application configuration from the environment variables.
+// If any configuration loading or validation fails, it returns a nil Config
+// and a single error joining all errors found.
 func New() (*Config, error) {
 	l := newLoader()
 	cfg := &Config{
