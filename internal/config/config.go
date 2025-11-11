@@ -117,7 +117,7 @@ func New() (*Config, error) {
 		logOutput: l.logOutput(),
 	}
 	if err := l.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 	return cfg, nil
 }
