@@ -108,6 +108,20 @@ type (
 	}
 )
 
+// New
+func New() (*Config, error) {
+	l := newLoader()
+	cfg := &Config{
+		logLevel:  l.logLevel(),
+		logFormat: l.logFormat(),
+		logOutput: l.logOutput(),
+	}
+	if err := l.Err(); err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
 type (
 	// loader is a helper struct for loading the application configuration.
 	loader struct {
