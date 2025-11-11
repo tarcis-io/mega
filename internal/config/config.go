@@ -107,7 +107,11 @@ func newLoader() *loader {
 	return &loader{}
 }
 
-// logLevel
+// logLevel loads, validates, and returns the log level from the environment
+// variables.
+// It accepts "debug", "info", "warn", or "error" (case-insensitive).
+// It returns the default value if the environment variable is not set.
+// If the value is invalid, it records the error and returns an empty LogLevel.
 func (l *loader) logLevel() LogLevel {
 	env := getEnv(EnvLogLevel, string(DefaultLogLevel))
 	switch val := LogLevel(strings.ToLower(env)); val {
@@ -118,7 +122,12 @@ func (l *loader) logLevel() LogLevel {
 	return ""
 }
 
-// logFormat
+// logFormat loads, validates, and returns the log format from the environment
+// variables.
+// It accepts "text" or "json" (case-insensitive).
+// It returns the default value if the environment variable is not set.
+// If the value is invalid, it records the error and returns an empty
+// LogFormat.
 func (l *loader) logFormat() LogFormat {
 	env := getEnv(EnvLogFormat, string(DefaultLogFormat))
 	switch val := LogFormat(strings.ToLower(env)); val {
