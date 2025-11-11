@@ -95,6 +95,20 @@ const (
 )
 
 type (
+	// Config
+	Config struct {
+		// logLevel
+		logLevel LogLevel
+
+		// logFormat
+		logFormat LogFormat
+
+		// logOutput
+		logOutput LogOutput
+	}
+)
+
+type (
 	// loader is a helper struct for loading the application configuration.
 	loader struct {
 		// errs holds all the errors encountered during the loading process.
