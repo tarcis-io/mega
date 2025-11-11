@@ -95,15 +95,15 @@ const (
 )
 
 type (
-	// Config
+	// Config represents the application configuration.
 	Config struct {
-		// logLevel
+		// logLevel specifies the severity level of log messages.
 		logLevel LogLevel
 
-		// logFormat
+		// logFormat specifies the output format of log messages.
 		logFormat LogFormat
 
-		// logOutput
+		// logOutput specifies the destination for log messages.
 		logOutput LogOutput
 	}
 )
