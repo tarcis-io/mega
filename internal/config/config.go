@@ -122,17 +122,20 @@ func New() (*Config, error) {
 	return cfg, nil
 }
 
-// LogLevel
+// LogLevel returns the log level configured for the application.
+// It can be "debug", "info", "warn", or "error".
 func (cfg *Config) LogLevel() LogLevel {
 	return cfg.logLevel
 }
 
-// LogFormat
+// LogFormat returns the log format configured for the application.
+// It can be "text" or "json".
 func (cfg *Config) LogFormat() LogFormat {
 	return cfg.logFormat
 }
 
-// LogOutput
+// LogOutput returns the log output configured for the application.
+// It can be "stdout", "stderr", or a file path.
 func (cfg *Config) LogOutput() LogOutput {
 	return cfg.logOutput
 }
