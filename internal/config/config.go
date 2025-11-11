@@ -138,7 +138,12 @@ func (l *loader) logFormat() LogFormat {
 	return ""
 }
 
-// logOutput
+// logOutput loads, validates, and returns the log output from the environment
+// variables.
+// It accepts "stdout", "stderr" (case-insensitive), or a file path.
+// It returns the default value if the environment variable is not set.
+// If the value is invalid, it records the error and returns an empty
+// LogOutput.
 func (l *loader) logOutput() LogOutput {
 	env := getEnv(EnvLogOutput, string(DefaultLogOutput))
 	switch val := LogOutput(strings.ToLower(env)); val {
