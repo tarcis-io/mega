@@ -122,6 +122,21 @@ func New() (*Config, error) {
 	return cfg, nil
 }
 
+// LogLevel
+func (cfg *Config) LogLevel() LogLevel {
+	return cfg.logLevel
+}
+
+// LogFormat
+func (cfg *Config) LogFormat() LogFormat {
+	return cfg.logFormat
+}
+
+// LogOutput
+func (cfg *Config) LogOutput() LogOutput {
+	return cfg.logOutput
+}
+
 type (
 	// loader is a helper struct for loading the application configuration.
 	loader struct {
