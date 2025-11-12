@@ -126,19 +126,21 @@ func New() (*Config, error) {
 }
 
 // LogLevel returns the log level configured for the application.
-// It can be "debug", "info", "warn", or "error".
+// Valid values are LogLevelDebug, LogLevelInfo, LogLevelWarn, and
+// LogLevelError.
 func (cfg *Config) LogLevel() LogLevel {
 	return cfg.logLevel
 }
 
 // LogFormat returns the log format configured for the application.
-// It can be "text" or "json".
+// Valid values are LogFormatText and LogFormatJSON.
 func (cfg *Config) LogFormat() LogFormat {
 	return cfg.logFormat
 }
 
 // LogOutput returns the log output configured for the application.
-// It can be "stdout", "stderr", or a file path.
+// Valid values are LogOutputStdout, LogOutputStderr, or a custom string
+// (typically a file path).
 func (cfg *Config) LogOutput() LogOutput {
 	return cfg.logOutput
 }
@@ -159,7 +161,7 @@ func newLoader() *loader {
 // logLevel loads, validates, and returns the log level from the environment
 // variables.
 // It accepts "debug", "info", "warn", or "error" (case-insensitive).
-// It returns the default value if the environment variable is not set.
+// It returns the default value if the environment variable is unset.
 // If the value is invalid, it records the error and returns an empty LogLevel.
 func (l *loader) logLevel() LogLevel {
 	env := getEnv(EnvLogLevel, string(DefaultLogLevel))
@@ -174,7 +176,7 @@ func (l *loader) logLevel() LogLevel {
 // logFormat loads, validates, and returns the log format from the environment
 // variables.
 // It accepts "text" or "json" (case-insensitive).
-// It returns the default value if the environment variable is not set.
+// It returns the default value if the environment variable is unset.
 // If the value is invalid, it records the error and returns an empty
 // LogFormat.
 func (l *loader) logFormat() LogFormat {
@@ -189,8 +191,9 @@ func (l *loader) logFormat() LogFormat {
 
 // logOutput loads, validates, and returns the log output from the environment
 // variables.
-// It accepts "stdout", "stderr" (case-insensitive), or a file path.
-// It returns the default value if the environment variable is not set.
+// It accepts "stdout", "stderr" (case-insensitive), or a custom string
+// (typically a file path).
+// It returns the default value if the environment variable is unset.
 // If the value is invalid, it records the error and returns an empty
 // LogOutput.
 func (l *loader) logOutput() LogOutput {
@@ -220,7 +223,7 @@ func (l *loader) Err() error {
 }
 
 // getEnv retrieves the value of the environment variable with the given name.
-// If the variable is not set, it returns the provided default value.
+// If the variable is unset, it returns the provided default value.
 func getEnv(name, defaultValue string) string {
 	if val, ok := os.LookupEnv(name); ok {
 		return val
