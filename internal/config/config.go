@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -242,9 +243,18 @@ func (l *loader) logOutput() LogOutput {
 // If the value is invalid, it records the error and returns an empty string.
 func (l *loader) serverAddress() string {
 	env := getEnv(EnvServerAddress, DefaultServerAddress)
-	_, _, err := net.SplitHostPort(env)
+	_, portStr, err := net.SplitHostPort(env)
 	if err != nil {
 		l.appendError(fmt.Errorf("invalid server address (%s) got=%q: %w", EnvServerAddress, env, err))
+		return ""
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		l.appendError(fmt.Errorf("invalid port in server address (%s) got=%q: %w", EnvServerAddress, env, err))
+		return ""
+	}
+	if port < tcpPortMin || port > tcpPortMax {
+		l.appendError(fmt.Errorf("invalid port in server address (%s) got=%q", EnvServerAddress, env))
 		return ""
 	}
 	return env
