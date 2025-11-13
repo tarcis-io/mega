@@ -105,6 +105,9 @@ type (
 
 		// logOutput specifies the destination for log messages.
 		logOutput LogOutput
+
+		// serverAddress specifies the address to bind the server to.
+		serverAddress string
 	}
 )
 
@@ -115,9 +118,10 @@ type (
 func New() (*Config, error) {
 	l := newLoader()
 	cfg := &Config{
-		logLevel:  l.logLevel(),
-		logFormat: l.logFormat(),
-		logOutput: l.logOutput(),
+		logLevel:      l.logLevel(),
+		logFormat:     l.logFormat(),
+		logOutput:     l.logOutput(),
+		serverAddress: l.serverAddress(),
 	}
 	if err := l.Err(); err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
@@ -143,6 +147,11 @@ func (cfg *Config) LogFormat() LogFormat {
 // (typically a file path).
 func (cfg *Config) LogOutput() LogOutput {
 	return cfg.logOutput
+}
+
+// ServerAddress
+func (cfg *Config) ServerAddress() string {
+	return cfg.serverAddress
 }
 
 type (
@@ -206,6 +215,11 @@ func (l *loader) logOutput() LogOutput {
 		return ""
 	}
 	return LogOutput(env)
+}
+
+// serverAddress
+func (l *loader) serverAddress() string {
+	return ""
 }
 
 // appendError adds a new error to the loader's internal slice of errors.
