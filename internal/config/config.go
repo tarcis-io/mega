@@ -254,7 +254,7 @@ func (l *loader) serverAddress() string {
 		return ""
 	}
 	if port < tcpPortMin || port > tcpPortMax {
-		l.appendError(fmt.Errorf("invalid port in server address (%s) got=%q", EnvServerAddress, env))
+		l.appendError(fmt.Errorf("invalid port in server address (%s) got=%q: out of range [%d-%d]", EnvServerAddress, env, tcpPortMin, tcpPortMax))
 		return ""
 	}
 	return env
