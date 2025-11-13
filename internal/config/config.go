@@ -232,6 +232,7 @@ func (l *loader) serverAddress() string {
 	_, _, err := net.SplitHostPort(env)
 	if err != nil {
 		l.appendError(fmt.Errorf("invalid server address (%s) got=%q: %w", EnvServerAddress, env, err))
+		return ""
 	}
 	return env
 }
