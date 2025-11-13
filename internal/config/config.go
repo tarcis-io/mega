@@ -159,6 +159,7 @@ func (cfg *Config) LogOutput() LogOutput {
 }
 
 // ServerAddress returns the server address configured for the application.
+// Valid format is "host:port".
 func (cfg *Config) ServerAddress() string {
 	return cfg.serverAddress
 }
