@@ -226,7 +226,11 @@ func (l *loader) logOutput() LogOutput {
 	return LogOutput(env)
 }
 
-// serverAddress
+// serverAddress loads, validates, and returns the server address from the
+// environment variables.
+// It accepts a valid "host:port" string.
+// It returns the default value if the environment variable is unset.
+// If the value is invalid, it records the error and returns an empty string.
 func (l *loader) serverAddress() string {
 	env := getEnv(EnvServerAddress, DefaultServerAddress)
 	_, _, err := net.SplitHostPort(env)
