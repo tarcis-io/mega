@@ -78,6 +78,10 @@ const (
 	// EnvLogOutput defines the environment variable name for setting the log
 	// output.
 	EnvLogOutput = "LOG_OUTPUT"
+
+	// EnvServerAddress defines the environment variable name for setting the
+	// server address.
+	EnvServerAddress = "SERVER_ADDRESS"
 )
 
 const (
@@ -92,6 +96,10 @@ const (
 	// DefaultLogOutput defines the default log output used if not otherwise
 	// specified.
 	DefaultLogOutput = LogOutputStdout
+
+	// DefaultServerAddress defines the default server address used if not
+	// otherwise specified.
+	DefaultServerAddress = "localhost:8080"
 )
 
 type (
@@ -149,7 +157,7 @@ func (cfg *Config) LogOutput() LogOutput {
 	return cfg.logOutput
 }
 
-// ServerAddress
+// ServerAddress returns the server address configured for the application.
 func (cfg *Config) ServerAddress() string {
 	return cfg.serverAddress
 }
