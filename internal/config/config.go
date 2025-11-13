@@ -103,6 +103,14 @@ const (
 	DefaultServerAddress = "localhost:8080"
 )
 
+const (
+	// tcpPortMin defines the minimum port number for TCP connections.
+	tcpPortMin = 0
+
+	// tcpPortMax defines the maximum port number for TCP connections.
+	tcpPortMax = 65535
+)
+
 type (
 	// Config represents the application configuration.
 	Config struct {
