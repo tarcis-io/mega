@@ -4,6 +4,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 )
@@ -227,7 +228,12 @@ func (l *loader) logOutput() LogOutput {
 
 // serverAddress
 func (l *loader) serverAddress() string {
-	return ""
+	env := getEnv(EnvServerAddress, DefaultServerAddress)
+	_, _, err := net.SplitHostPort(env)
+	if err != nil {
+		l.appendError(fmt.Errorf("invalid server address (%s) got=%q: %w", EnvServerAddress, env, err))
+	}
+	return env
 }
 
 // appendError adds a new error to the loader's internal slice of errors.
