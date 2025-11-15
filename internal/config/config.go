@@ -128,19 +128,24 @@ type (
 		// serverAddress specifies the address to bind the server to.
 		serverAddress string
 
-		// serverReadTimeout
+		// serverReadTimeout specifies the maximum duration for reading the
+		// entire request, including the body.
 		serverReadTimeout time.Duration
 
-		// serverReadHeaderTimeout
+		// serverReadHeaderTimeout specifies the amount of time allowed to read
+		// request headers.
 		serverReadHeaderTimeout time.Duration
 
-		// serverWriteTimeout
+		// serverWriteTimeout specifies the maximum duration before timing out
+		// writes of the response.
 		serverWriteTimeout time.Duration
 
-		// serverIdleTimeout
+		// serverIdleTimeout specifies the maximum amount of time to wait for
+		// the next request when keep-alives are enabled.
 		serverIdleTimeout time.Duration
 
-		// serverShutdownTimeout
+		// serverShutdownTimeout specifies the maximum duration for waiting for
+		// the server to gracefully shutdown.
 		serverShutdownTimeout time.Duration
 	}
 )
