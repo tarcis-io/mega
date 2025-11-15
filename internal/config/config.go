@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type (
@@ -126,6 +127,21 @@ type (
 
 		// serverAddress specifies the address to bind the server to.
 		serverAddress string
+
+		// serverReadTimeout
+		serverReadTimeout time.Duration
+
+		// serverReadHeaderTimeout
+		serverReadHeaderTimeout time.Duration
+
+		// serverWriteTimeout
+		serverWriteTimeout time.Duration
+
+		// serverIdleTimeout
+		serverIdleTimeout time.Duration
+
+		// serverShutdownTimeout
+		serverShutdownTimeout time.Duration
 	}
 )
 
