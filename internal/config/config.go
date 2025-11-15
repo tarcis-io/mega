@@ -194,6 +194,36 @@ func (cfg *Config) ServerAddress() string {
 	return cfg.serverAddress
 }
 
+// ServerReadTimeout returns the server read timeout configured for the
+// application.
+func (cfg *Config) ServerReadTimeout() time.Duration {
+	return cfg.serverReadTimeout
+}
+
+// ServerReadHeaderTimeout returns the server read header timeout configured
+// for the application.
+func (cfg *Config) ServerReadHeaderTimeout() time.Duration {
+	return cfg.serverReadHeaderTimeout
+}
+
+// ServerWriteTimeout returns the server write timeout configured for the
+// application.
+func (cfg *Config) ServerWriteTimeout() time.Duration {
+	return cfg.serverWriteTimeout
+}
+
+// ServerIdleTimeout returns the server idle timeout configured for the
+// application.
+func (cfg *Config) ServerIdleTimeout() time.Duration {
+	return cfg.serverIdleTimeout
+}
+
+// ServerShutdownTimeout returns the server shutdown timeout configured for the
+// application.
+func (cfg *Config) ServerShutdownTimeout() time.Duration {
+	return cfg.serverShutdownTimeout
+}
+
 type (
 	// loader is a helper struct for loading the application configuration.
 	loader struct {
