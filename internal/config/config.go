@@ -152,8 +152,8 @@ type (
 
 // New creates and returns a new Config instance by loading and validating the
 // application configuration from the environment variables.
-// If any configuration loading or validation fails, it returns a nil Config
-// and a single error joining all errors found.
+// If any configuration loading or validation fails, it returns a nil Config and a
+// single error joining all errors found.
 func New() (*Config, error) {
 	l := newLoader()
 	cfg := &Config{
@@ -169,8 +169,7 @@ func New() (*Config, error) {
 }
 
 // LogLevel returns the log level configured for the application.
-// Valid values are LogLevelDebug, LogLevelInfo, LogLevelWarn, and
-// LogLevelError.
+// Valid values are LogLevelDebug, LogLevelInfo, LogLevelWarn, and LogLevelError.
 func (cfg *Config) LogLevel() LogLevel {
 	return cfg.logLevel
 }
@@ -182,8 +181,8 @@ func (cfg *Config) LogFormat() LogFormat {
 }
 
 // LogOutput returns the log output configured for the application.
-// Valid values are LogOutputStdout, LogOutputStderr, or a custom string
-// (typically a file path).
+// Valid values are LogOutputStdout, LogOutputStderr, or a custom string (typically
+// a file path).
 func (cfg *Config) LogOutput() LogOutput {
 	return cfg.logOutput
 }
@@ -200,8 +199,8 @@ func (cfg *Config) ServerReadTimeout() time.Duration {
 	return cfg.serverReadTimeout
 }
 
-// ServerReadHeaderTimeout returns the server read header timeout configured
-// for the application.
+// ServerReadHeaderTimeout returns the server read header timeout configured for
+// the application.
 func (cfg *Config) ServerReadHeaderTimeout() time.Duration {
 	return cfg.serverReadHeaderTimeout
 }
@@ -256,8 +255,7 @@ func (l *loader) logLevel() LogLevel {
 // variables.
 // It accepts "text" or "json" (case-insensitive).
 // It returns the default value if the environment variable is unset.
-// If the value is invalid, it records the error and returns an empty
-// LogFormat.
+// If the value is invalid, it records the error and returns an empty LogFormat.
 func (l *loader) logFormat() LogFormat {
 	env := getEnv(EnvLogFormat, string(DefaultLogFormat))
 	switch val := LogFormat(strings.ToLower(env)); val {
@@ -270,11 +268,10 @@ func (l *loader) logFormat() LogFormat {
 
 // logOutput loads, validates, and returns the log output from the environment
 // variables.
-// It accepts "stdout", "stderr" (case-insensitive), or a custom string
-// (typically a file path).
+// It accepts "stdout", "stderr" (case-insensitive), or a custom string (typically
+// a file path).
 // It returns the default value if the environment variable is unset.
-// If the value is invalid, it records the error and returns an empty
-// LogOutput.
+// If the value is invalid, it records the error and returns an empty LogOutput.
 func (l *loader) logOutput() LogOutput {
 	env := getEnv(EnvLogOutput, string(DefaultLogOutput))
 	switch val := LogOutput(strings.ToLower(env)); val {
