@@ -6,10 +6,11 @@ type (
 )
 
 const (
-	// LogLevelDebug
+	// LogLevelDebug captures detailed information, typically useful for development
+	// and debugging purposes.
 	LogLevelDebug LogLevel = "debug"
 
-	// LogLevelInfo
+	// LogLevelInfo captures general information about the application's operation.
 	LogLevelInfo LogLevel = "info"
 
 	// LogLevelWarn
@@ -38,9 +39,9 @@ type (
 )
 
 const (
-	// LogOutputStdout writes log records to the standard output stream.
+	// LogOutputStdout writes log records to the standard output stream (stdout).
 	LogOutputStdout LogOutput = "stdout"
 
-	// LogOutputStderr writes log records to the standard error stream.
+	// LogOutputStderr writes log records to the standard error stream (stderr).
 	LogOutputStderr LogOutput = "stderr"
 )
