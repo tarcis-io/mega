@@ -17,10 +17,10 @@ type (
 )
 
 const (
-	// LogFormatText renders logs as human-readable plain text.
+	// LogFormatText renders log records as human-readable plain text.
 	LogFormatText LogFormat = "text"
 
-	// LogFormatJSON renders logs as structured JSON objects.
+	// LogFormatJSON renders log records as structured JSON objects.
 	LogFormatJSON LogFormat = "json"
 )
 
