@@ -1,13 +1,21 @@
 package config
 
 type (
+	// LogLevel represents the severity or verbosity of the log records.
 	LogLevel string
 )
 
 const (
+	// LogLevelDebug
 	LogLevelDebug LogLevel = "debug"
-	LogLevelInfo  LogLevel = "info"
-	LogLevelWarn  LogLevel = "warn"
+
+	// LogLevelInfo
+	LogLevelInfo LogLevel = "info"
+
+	// LogLevelWarn
+	LogLevelWarn LogLevel = "warn"
+
+	// LogLevelError
 	LogLevelError LogLevel = "error"
 )
 
