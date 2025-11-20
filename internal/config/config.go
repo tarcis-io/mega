@@ -13,10 +13,11 @@ const (
 	// LogLevelInfo captures general information about the application's operation.
 	LogLevelInfo LogLevel = "info"
 
-	// LogLevelWarn
+	// LogLevelWarn captures non-critical events or potentially harmful situations.
 	LogLevelWarn LogLevel = "warn"
 
-	// LogLevelError
+	// LogLevelError captures critical events or errors that require immediate
+	// attention.
 	LogLevelError LogLevel = "error"
 )
 
