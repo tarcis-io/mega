@@ -72,3 +72,27 @@ const (
 	// DefaultLogOutput defines the default log output.
 	DefaultLogOutput = LogOutputStdout
 )
+
+type (
+	// Config
+	Config struct {
+		logLevel  LogLevel
+		logFormat LogFormat
+		logOutput LogOutput
+	}
+)
+
+// LogLevel
+func (cfg *Config) LogLevel() LogLevel {
+	return cfg.logLevel
+}
+
+// LogFormat
+func (cfg *Config) LogFormat() LogFormat {
+	return cfg.logFormat
+}
+
+// LogOutput
+func (cfg *Config) LogOutput() LogOutput {
+	return cfg.logOutput
+}
