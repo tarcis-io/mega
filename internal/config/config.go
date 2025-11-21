@@ -1,3 +1,4 @@
+// Package config loads and provides the application configuration.
 package config
 
 type (
