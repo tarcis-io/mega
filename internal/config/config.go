@@ -49,13 +49,16 @@ const (
 )
 
 const (
-	// EnvLogLevel
+	// EnvLogLevel specifies the environment variable name for configuring the log
+	// level.
 	EnvLogLevel = "LOG_LEVEL"
 
-	// EnvLogFormat
+	// EnvLogFormat specifies the environment variable name for configuring the log
+	// format.
 	EnvLogFormat = "LOG_FORMAT"
 
-	// EnvLogOutput
+	// EnvLogOutput specifies the environment variable name for configuring the log
+	// output.
 	EnvLogOutput = "LOG_OUTPUT"
 )
 
