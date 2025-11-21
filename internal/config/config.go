@@ -2,13 +2,13 @@
 package config
 
 type (
-	// LogLevel represents the severity or verbosity of the log records.
+	// LogLevel represents the severity or verbosity of log records.
 	LogLevel string
 )
 
 const (
 	// LogLevelDebug captures detailed information, typically useful for development
-	// and debugging purposes.
+	// and debugging.
 	LogLevelDebug LogLevel = "debug"
 
 	// LogLevelInfo captures general information about the application's operation.
@@ -23,7 +23,7 @@ const (
 )
 
 type (
-	// LogFormat represents the encoding style of the log records.
+	// LogFormat represents the encoding style of log records.
 	LogFormat string
 )
 
