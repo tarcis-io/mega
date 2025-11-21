@@ -63,12 +63,12 @@ const (
 )
 
 const (
-	// DefaultLogLevel
+	// DefaultLogLevel defines the default log level.
 	DefaultLogLevel = LogLevelInfo
 
-	// DefaultLogFormat
+	// DefaultLogFormat defines the default log format.
 	DefaultLogFormat = LogFormatText
 
-	// DefaultLogOutput
+	// DefaultLogOutput defines the default log output.
 	DefaultLogOutput = LogOutputStdout
 )
