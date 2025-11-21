@@ -74,7 +74,7 @@ const (
 )
 
 type (
-	// Config
+	// Config represents the immutable application configuration.
 	Config struct {
 		logLevel  LogLevel
 		logFormat LogFormat
@@ -82,17 +82,17 @@ type (
 	}
 )
 
-// LogLevel
+// LogLevel returns the configured severity or verbosity of log records.
 func (cfg *Config) LogLevel() LogLevel {
 	return cfg.logLevel
 }
 
-// LogFormat
+// LogFormat returns the configured encoding style of log records.
 func (cfg *Config) LogFormat() LogFormat {
 	return cfg.logFormat
 }
 
-// LogOutput
+// LogOutput returns the configured destination stream for log records.
 func (cfg *Config) LogOutput() LogOutput {
 	return cfg.logOutput
 }
