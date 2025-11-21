@@ -47,3 +47,25 @@ const (
 	// LogOutputStderr writes log records to the standard error stream (stderr).
 	LogOutputStderr LogOutput = "stderr"
 )
+
+const (
+	// EnvLogLevel
+	EnvLogLevel = "LOG_LEVEL"
+
+	// EnvLogFormat
+	EnvLogFormat = "LOG_FORMAT"
+
+	// EnvLogOutput
+	EnvLogOutput = "LOG_OUTPUT"
+)
+
+const (
+	// DefaultLogLevel
+	DefaultLogLevel = LogLevelInfo
+
+	// DefaultLogFormat
+	DefaultLogFormat = LogFormatText
+
+	// DefaultLogOutput
+	DefaultLogOutput = LogOutputStdout
+)
