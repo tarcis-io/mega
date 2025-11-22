@@ -160,6 +160,19 @@ func (l *loader) logFormat() LogFormat {
 	return ""
 }
 
+func (l *loader) logOutput() LogOutput {
+	env := getEnv(EnvLogOutput, string(DefaultLogOutput))
+	switch val := LogOutput(strings.ToLower(env)); val {
+	case LogOutputStdout, LogOutputStderr:
+		return val
+	}
+	if env == "" {
+		l.appendError(fmt.Errorf("invalid log output (%s) got=%q", EnvLogOutput, env))
+		return ""
+	}
+	return LogOutput(env)
+}
+
 // appendError
 func (l *loader) appendError(err error) {
 	l.errs = append(l.errs, err)
