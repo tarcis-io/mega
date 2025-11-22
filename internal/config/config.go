@@ -1,6 +1,10 @@
 // Package config loads and provides the application configuration.
 package config
 
+import (
+	"errors"
+)
+
 type (
 	// LogLevel represents the severity or verbosity of log records.
 	LogLevel string
@@ -129,4 +133,15 @@ type (
 
 func newLoader() *loader {
 	return &loader{}
+}
+
+func (l *loader) appendError(err error) {
+	l.errs = append(l.errs, err)
+}
+
+func (l *loader) Err() error {
+	if len(l.errs) == 0 {
+		return nil
+	}
+	return errors.Join(l.errs...)
 }
