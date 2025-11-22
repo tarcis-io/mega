@@ -113,6 +113,20 @@ type (
 	}
 )
 
+// New
+func New() (*Config, error) {
+	l := newLoader()
+	cfg := &Config{
+		logLevel:  l.logLevel(),
+		logFormat: l.logFormat(),
+		logOutput: l.logOutput(),
+	}
+	if err := l.Err(); err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
+	return cfg, nil
+}
+
 // LogLevel returns the configured severity or verbosity of log records.
 func (cfg *Config) LogLevel() LogLevel {
 	return cfg.logLevel
