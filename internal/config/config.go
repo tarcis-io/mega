@@ -120,3 +120,13 @@ func (cfg *Config) LogFormat() LogFormat {
 func (cfg *Config) LogOutput() LogOutput {
 	return cfg.logOutput
 }
+
+type (
+	loader struct {
+		errs []error
+	}
+)
+
+func newLoader() *loader {
+	return &loader{}
+}
