@@ -135,7 +135,7 @@ type (
 	}
 )
 
-// newLoader
+// newLoader creates and returns a new [loader] instance.
 func newLoader() *loader {
 	return &loader{}
 }
@@ -189,7 +189,8 @@ func (l *loader) Err() error {
 	return errors.Join(l.errs...)
 }
 
-// getEnv
+// getEnv retrieves the value of the environment variable named by the key.
+// If the variable is unset, the provided default value is returned.
 func getEnv(key, defaultValue string) string {
 	if val, ok := os.LookupEnv(key); ok {
 		return val
