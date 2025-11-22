@@ -80,7 +80,7 @@ const (
 	//
 	//  - [LogOutputStdout]
 	//  - [LogOutputStderr]
-	//  - custom string (typically a file path)
+	//  - file path (e.g. /var/log/app.log)
 	//
 	// Default: [DefaultLogOutput]
 	EnvLogOutput = "LOG_OUTPUT"
