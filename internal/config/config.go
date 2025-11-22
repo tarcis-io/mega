@@ -3,6 +3,7 @@ package config
 
 import (
 	"errors"
+	"os"
 )
 
 type (
@@ -126,22 +127,34 @@ func (cfg *Config) LogOutput() LogOutput {
 }
 
 type (
+	// loader
 	loader struct {
 		errs []error
 	}
 )
 
+// newLoader
 func newLoader() *loader {
 	return &loader{}
 }
 
+// appendError
 func (l *loader) appendError(err error) {
 	l.errs = append(l.errs, err)
 }
 
+// Err
 func (l *loader) Err() error {
 	if len(l.errs) == 0 {
 		return nil
 	}
 	return errors.Join(l.errs...)
+}
+
+// getEnv
+func getEnv(key, defaultValue string) string {
+	if val, ok := os.LookupEnv(key); ok {
+		return val
+	}
+	return defaultValue
 }
