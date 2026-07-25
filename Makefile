@@ -2,15 +2,18 @@
 #
 # It automates the setup and compilation of the web assets and WebAssembly modules.
 
-TINYGO   ?= tinygo
-TAILWIND ?= tailwindcss
+TINYGO      ?= tinygo
+TAILWINDCSS ?= tailwindcss
 
-.PHONY: all setup css wasm clean
+.PHONY: all setup build build-css build-wasm clean
 
 # all is the default target.
 #
-# It sets up the application and compiles the web assets and WebAssembly modules.
-all: setup css wasm
+# It sets up the environment and compiles all application assets.
+all: setup build
+
+# build executes all compilation targets for the application.
+build: build-css build-wasm
 
 # setup prepares dependencies for the application.
 setup:
@@ -18,14 +21,14 @@ setup:
 	@mkdir -p web/public/js/wasm
 	@cp $(shell $(TINYGO) env TINYGOROOT)/targets/wasm_exec.js web/public/js/wasm/wasm_exec.js
 
-# css compiles the styles to output a CSS file.
-css:
+# build-css compiles the styles to output a CSS file.
+build-css:
 	@echo "Compiling CSS..."
 	@mkdir -p web/public/css
-	@$(TAILWIND) -i web/src/css/app.css -o web/public/css/app.css --minify
+	@$(TAILWINDCSS) -i web/src/css/app.css -o web/public/css/app.css --minify
 
-# wasm compiles the Go packages to WebAssembly modules.
-wasm:
+# build-wasm compiles the Go packages to WebAssembly modules.
+build-wasm:
 	@echo "Compiling WebAssembly modules..."
 	@mkdir -p web/public/wasm
 	@$(TINYGO) build -target wasm -o web/public/wasm/home.wasm cmd/wasm/home
