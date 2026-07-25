@@ -1,0 +1,11 @@
+# Web
+web/public/js/wasm/wasm_exec.js
+web/public/wasm/*.wasm
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
