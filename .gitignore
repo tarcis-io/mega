@@ -1,4 +1,5 @@
-# Web
+# Web Assets
+web/public/css/app.css
 web/public/js/wasm/wasm_exec.js
 web/public/wasm/*.wasm
 
