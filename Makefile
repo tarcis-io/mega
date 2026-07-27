@@ -9,11 +9,14 @@ TAILWINDCSS ?= tailwindcss
 # Resolved path to the TinyGo installation directory.
 TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT)
 
+# Directories to exclude from source tracking.
+IGNORE_DIRS := -type d -name .git -prune -o
+
 # Tracks all Go files to trigger WASM rebuilds on internal package changes.
-GO_SRCS := $(shell find . -type f -name '*.go')
+GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' -print)
 
 # Tracks all UI files to trigger CSS rebuilds on Tailwind utility class changes.
-UI_SRCS := $(shell find . -type f \( -name '*.go' -o -name '*.tmpl' \))
+UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' -o -name '*.tmpl' \) -print)
 
 # Hierarchical directory structure for source code and compiled assets.
 CMD                = cmd
@@ -40,7 +43,7 @@ HOME_WASM_OUTPUT    = $(WEB_PUBLIC_WASM)/home.wasm
 WASM_EXEC_JS_OUTPUT = $(WEB_PUBLIC_JS_WASM)/wasm_exec.js
 
 # Non-file action aliases (phony targets).
-.PHONY: all setup build build-css build-wasm clean
+.PHONY: all setup build build-css build-wasm clean help
 
 # all is the default target.
 #
@@ -79,7 +82,7 @@ build-wasm: $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
 $(HOME_WASM_OUTPUT): $(GO_SRCS)
 	@echo "Compiling home WebAssembly module..."
 	@mkdir -p $(dir $@)
-	@$(TINYGO) build -target wasm -o $@ $(CMD_WASM_HOME)
+	@$(TINYGO) build -target wasm -o $@ ./$(CMD_WASM_HOME)
 
 # Compile about WebAssembly module.
 #
@@ -87,10 +90,25 @@ $(HOME_WASM_OUTPUT): $(GO_SRCS)
 $(ABOUT_WASM_OUTPUT): $(GO_SRCS)
 	@echo "Compiling about WebAssembly module..."
 	@mkdir -p $(dir $@)
-	@$(TINYGO) build -target wasm -o $@ $(CMD_WASM_ABOUT)
+	@$(TINYGO) build -target wasm -o $@ ./$(CMD_WASM_ABOUT)
 
 # clean removes all generated build artifacts and empty directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
 	@rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
-	@rmdir $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM) 2>/dev/null || true
+	@rmdir $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_JS) $(WEB_PUBLIC_WASM) $(WEB_PUBLIC) 2>/dev/null || true
+
+# help displays this help message.
+help:
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@awk '/^[a-zA-Z\-\_0-9]+:/ { \
+		helpMessage = match(lastLine, /^# (.*)/); \
+		if (helpMessage) { \
+			helpCommand = substr($$1, 0, index($$1, ":")-1); \
+			helpDesc = substr(lastLine, RSTART + 2, RLENGTH); \
+			printf "  \033[36m%-15s\033[0m %s\n", helpCommand, helpDesc; \
+		} \
+	} \
+	{ lastLine = $$0 }' $(MAKEFILE_LIST)
