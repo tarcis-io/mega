@@ -9,6 +9,12 @@ TAILWINDCSS ?= tailwindcss
 # Resolved path to the TinyGo installation directory.
 TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT)
 
+# Tracks all Go files to trigger WASM rebuilds on internal package changes.
+GO_SRCS := $(shell find . -type f -name '*.go')
+
+# Tracks all UI files to trigger CSS rebuilds on Tailwind utility class changes.
+UI_SRCS := $(shell find . -type f \( -name '*.go' -o -name '*.tmpl' \))
+
 # Hierarchical directory structure for source code and compiled assets.
 CMD                = cmd
 CMD_WASM           = $(CMD)/wasm
@@ -56,8 +62,10 @@ $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 # build-css compiles the styles to output a CSS file.
 build-css: $(APP_CSS_OUTPUT)
 
-# Compile Tailwind CSS only if the source file changes.
-$(APP_CSS_OUTPUT): $(APP_CSS_INPUT)
+# Compile Tailwind CSS.
+#
+# Tracks UI files to catch utility class changes.
+$(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 	@echo "Compiling CSS..."
 	@mkdir -p $(dir $@)
 	@$(TAILWINDCSS) -i $< -o $@ --minify
@@ -65,19 +73,24 @@ $(APP_CSS_OUTPUT): $(APP_CSS_INPUT)
 # build-wasm compiles the Go packages to WebAssembly modules.
 build-wasm: $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
 
-# Compile home WebAssembly module. Tracks changes in the home directory.
-$(HOME_WASM_OUTPUT): $(wildcard $(CMD_WASM_HOME)/*.go)
+# Compile home WebAssembly module.
+#
+# Tracks all Go files to catch internal package changes.
+$(HOME_WASM_OUTPUT): $(GO_SRCS)
 	@echo "Compiling home WebAssembly module..."
 	@mkdir -p $(dir $@)
 	@$(TINYGO) build -target wasm -o $@ $(CMD_WASM_HOME)
 
-# Compile about WebAssembly module. Tracks changes in the about directory.
-$(ABOUT_WASM_OUTPUT): $(wildcard $(CMD_WASM_ABOUT)/*.go)
+# Compile about WebAssembly module.
+#
+# Tracks all Go files to catch internal package changes.
+$(ABOUT_WASM_OUTPUT): $(GO_SRCS)
 	@echo "Compiling about WebAssembly module..."
 	@mkdir -p $(dir $@)
 	@$(TINYGO) build -target wasm -o $@ $(CMD_WASM_ABOUT)
 
-# clean removes all generated build artifacts.
+# clean removes all generated build artifacts and empty directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
 	@rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
+	@rmdir $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM) 2>/dev/null || true
