@@ -7,7 +7,7 @@ TINYGO      ?= tinygo
 TAILWINDCSS ?= tailwindcss
 
 # Build tool flags.
-TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
+TINYGO_FLAGS   ?= -target wasm -opt s -no-debug
 TAILWIND_FLAGS ?= --minify
 
 # Resolved path to the TinyGo installation directory.
@@ -100,7 +100,7 @@ $(ABOUT_WASM_OUTPUT): $(GO_SRCS)
 clean:
 	@echo "Cleaning generated build artifacts..."
 	@rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
-	@find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
+	@[ -d $(WEB_PUBLIC) ] && find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
 
 # help displays this help message.
 help:
