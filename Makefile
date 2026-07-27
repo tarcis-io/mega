@@ -7,7 +7,7 @@ TINYGO      ?= tinygo
 TAILWINDCSS ?= tailwindcss
 
 # Build tool flags.
-TINYGO_FLAGS   ?= -target wasm -opt s -no-debug
+TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
 TAILWIND_FLAGS ?= --minify
 
 # Resolved path to the TinyGo installation directory.
