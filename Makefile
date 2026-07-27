@@ -6,6 +6,10 @@
 TINYGO      ?= tinygo
 TAILWINDCSS ?= tailwindcss
 
+# Build tool flags.
+TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
+TAILWIND_FLAGS ?= --minify
+
 # Resolved path to the TinyGo installation directory.
 TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT)
 
@@ -71,7 +75,7 @@ build-css: $(APP_CSS_OUTPUT)
 $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 	@echo "Compiling CSS..."
 	@mkdir -p $(dir $@)
-	@$(TAILWINDCSS) -i $< -o $@ --minify
+	@$(TAILWINDCSS) $(TAILWIND_FLAGS) -i $< -o $@
 
 # build-wasm compiles the Go packages to WebAssembly modules.
 build-wasm: $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
@@ -82,7 +86,7 @@ build-wasm: $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
 $(HOME_WASM_OUTPUT): $(GO_SRCS)
 	@echo "Compiling home WebAssembly module..."
 	@mkdir -p $(dir $@)
-	@$(TINYGO) build -target wasm -o $@ ./$(CMD_WASM_HOME)
+	@$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM_HOME)
 
 # Compile about WebAssembly module.
 #
@@ -90,13 +94,13 @@ $(HOME_WASM_OUTPUT): $(GO_SRCS)
 $(ABOUT_WASM_OUTPUT): $(GO_SRCS)
 	@echo "Compiling about WebAssembly module..."
 	@mkdir -p $(dir $@)
-	@$(TINYGO) build -target wasm -o $@ ./$(CMD_WASM_ABOUT)
+	@$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM_ABOUT)
 
 # clean removes all generated build artifacts and empty directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
 	@rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
-	@rmdir $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_JS) $(WEB_PUBLIC_WASM) $(WEB_PUBLIC) 2>/dev/null || true
+	@find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
 
 # help displays this help message.
 help:
