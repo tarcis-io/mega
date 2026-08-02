@@ -5,7 +5,6 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/tarcis-io/mega/internal/server"
 )
@@ -13,7 +12,6 @@ import (
 // main runs the primary server responsible for handling incoming HTTP requests.
 func main() {
 	if err := server.Run(); err != nil {
-		log.Printf("failed to run server: %v", err)
-		os.Exit(1)
+		log.Fatalf("failed to run server: %v", err)
 	}
 }
