@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mega.ws/sitemap.xml
