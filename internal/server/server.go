@@ -19,22 +19,31 @@ const (
 )
 
 func Run() error {
+	router, err := setupRouter()
+	if err != nil {
+		return err
+	}
+
+	addr := getServerAddress()
+	log.Printf("HTTP server is starting on http://%s", addr)
+
+	if err := http.ListenAndServe(addr, router); err != nil {
+		return fmt.Errorf("HTTP server stopped unexpectedly: %w", err)
+	}
+
+	return nil
+}
+
+func setupRouter() (*http.ServeMux, error) {
 	publicFS, err := fs.Sub(web.PublicFS, publicDir)
 	if err != nil {
-		return fmt.Errorf("failed to initialize public file system: %w", err)
+		return nil, fmt.Errorf("failed to initialize public file system: %w", err)
 	}
 
 	serveMux := http.NewServeMux()
 	serveMux.Handle(publicPrefix, http.StripPrefix(publicPrefix, http.FileServer(http.FS(publicFS))))
 
-	addr := getServerAddress()
-	log.Printf("HTTP server is starting on http://%s", addr)
-
-	if err := http.ListenAndServe(addr, serveMux); err != nil {
-		return fmt.Errorf("HTTP server stopped unexpectedly: %w", err)
-	}
-
-	return nil
+	return serveMux, nil
 }
 
 func getServerAddress() string {
