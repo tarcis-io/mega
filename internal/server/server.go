@@ -1,3 +1,5 @@
 package server
 
-func Run() {}
+func Run() error {
+	return nil
+}
