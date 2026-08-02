@@ -1,6 +1,8 @@
 package server
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -9,8 +11,9 @@ func Run() error {
 
 	serveMux := http.NewServeMux()
 
+	log.Printf("HTTP server is starting on http://%s", addr)
 	if err := http.ListenAndServe(addr, serveMux); err != nil {
-		return err
+		return fmt.Errorf("HTTP server stopped unexpectedly: %w", err)
 	}
 
 	return nil
