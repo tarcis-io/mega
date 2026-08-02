@@ -14,6 +14,7 @@ import (
 const (
 	publicDir    = "public"
 	publicPrefix = "/public/"
+	defaultHost  = "localhost"
 	defaultPort  = "8080"
 )
 
@@ -26,15 +27,7 @@ func Run() error {
 	serveMux := http.NewServeMux()
 	serveMux.Handle(publicPrefix, http.StripPrefix(publicPrefix, http.FileServer(http.FS(publicFS))))
 
-	host := os.Getenv("HOST")
-	port := os.Getenv("PORT")
-
-	if port == "" {
-		port = defaultPort
-	}
-
-	addr := net.JoinHostPort(host, port)
-
+	addr := getServerAddress()
 	log.Printf("HTTP server is starting on http://%s", addr)
 
 	if err := http.ListenAndServe(addr, serveMux); err != nil {
@@ -42,4 +35,18 @@ func Run() error {
 	}
 
 	return nil
+}
+
+func getServerAddress() string {
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = defaultHost
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = defaultPort
+	}
+
+	return net.JoinHostPort(host, port)
 }
