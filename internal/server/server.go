@@ -31,13 +31,7 @@ func Run() error {
 		return err
 	}
 
-	log.Printf("HTTP server is starting on http://%s", addr)
-
-	if err := server.ListenAndServe(); err != nil {
-		return fmt.Errorf("HTTP server stopped unexpectedly: %w", err)
-	}
-
-	return nil
+	return serve(server)
 }
 
 func buildAddr() string {
@@ -73,4 +67,9 @@ func buildServer(addr string, handler http.Handler) (*http.Server, error) {
 	}
 
 	return server, nil
+}
+
+func serve(server *http.Server) error {
+	log.Printf("HTTP server is starting on http://%s", server.Addr)
+	return server.ListenAndServe()
 }
