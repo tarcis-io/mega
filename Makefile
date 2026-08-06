@@ -49,9 +49,7 @@ WASM_EXEC_JS_OUTPUT = $(WEB_PUBLIC_JS_WASM)/wasm_exec.js
 # Non-file action aliases (phony targets).
 .PHONY: all setup build build-css build-wasm clean help
 
-# all is the default target.
-#
-# It sets up the environment and compiles all application assets.
+# all is the default target. It sets up the environment and compiles all application assets.
 all: setup build
 
 # build executes all compilation targets for the application.
