@@ -2,6 +2,9 @@
 #
 # It automates the setup and compilation of the web assets and WebAssembly modules.
 
+# Default target to execute when no arguments are provided.
+.DEFAULT_GOAL := all
+
 # Build tool executables.
 TINYGO      ?= tinygo
 TAILWINDCSS ?= tailwindcss
@@ -11,7 +14,7 @@ TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
 TAILWIND_FLAGS ?= --minify
 
 # Resolved path to the TinyGo installation directory.
-TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT)
+TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT 2>/dev/null)
 
 # Directories to exclude from source tracking.
 IGNORE_DIRS := -type d -name .git -prune -o
@@ -25,8 +28,6 @@ UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' -o -name '*.tmp
 # Hierarchical directory structure for source code and compiled assets.
 CMD                = cmd
 CMD_WASM           = $(CMD)/wasm
-CMD_WASM_ABOUT     = $(CMD_WASM)/about
-CMD_WASM_HOME      = $(CMD_WASM)/home
 WEB                = web
 WEB_PUBLIC         = $(WEB)/public
 WEB_PUBLIC_CSS     = $(WEB_PUBLIC)/css
@@ -42,9 +43,12 @@ WASM_EXEC_JS_INPUT = $(TINYGOROOT)/targets/wasm_exec.js
 
 # Generated artifacts and output files from the build process.
 APP_CSS_OUTPUT      = $(WEB_PUBLIC_CSS)/app.css
-ABOUT_WASM_OUTPUT   = $(WEB_PUBLIC_WASM)/about.wasm
-HOME_WASM_OUTPUT    = $(WEB_PUBLIC_WASM)/home.wasm
 WASM_EXEC_JS_OUTPUT = $(WEB_PUBLIC_JS_WASM)/wasm_exec.js
+
+# List of WebAssembly modules to be compiled.
+WASM_MODULES = \
+	$(WEB_PUBLIC_WASM)/about.wasm \
+	$(WEB_PUBLIC_WASM)/home.wasm
 
 # Non-file action aliases (phony targets).
 .PHONY: all setup build build-css build-wasm clean help
@@ -76,28 +80,20 @@ $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 	@$(TAILWINDCSS) $(TAILWIND_FLAGS) -i $< -o $@
 
 # build-wasm compiles the Go packages to WebAssembly modules.
-build-wasm: $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
+build-wasm: $(WASM_MODULES)
 
-# Compile home WebAssembly module.
+# Compile WebAssembly modules.
 #
 # Tracks all Go files to catch internal package changes.
-$(HOME_WASM_OUTPUT): $(GO_SRCS)
-	@echo "Compiling home WebAssembly module..."
+$(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS)
+	@echo "Compiling $* WebAssembly module..."
 	@mkdir -p $(dir $@)
-	@$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM_HOME)
-
-# Compile about WebAssembly module.
-#
-# Tracks all Go files to catch internal package changes.
-$(ABOUT_WASM_OUTPUT): $(GO_SRCS)
-	@echo "Compiling about WebAssembly module..."
-	@mkdir -p $(dir $@)
-	@$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM_ABOUT)
+	@$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM)/$*
 
 # clean removes all generated build artifacts and empty directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
-	@rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(HOME_WASM_OUTPUT) $(ABOUT_WASM_OUTPUT)
+	@rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(WASM_MODULES)
 	@[ -d $(WEB_PUBLIC) ] && find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
 
 # help displays this help message.
