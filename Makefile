@@ -5,16 +5,33 @@
 # Default target to execute when no arguments are provided.
 .DEFAULT_GOAL := all
 
-# Build tool executables.
-TINYGO      ?= tinygo
+# The TinyGo executable used to compile Go code to WebAssembly.
+#
+# Fail fast if tinygo is missing.
+TINYGO ?= tinygo
+ifeq (, $(shell command -v $(TINYGO) 2> /dev/null))
+	$(error Could not find tinygo. Is it installed correctly and in PATH?)
+endif
+
+# The Tailwind CSS CLI executable used to compile CSS styles.
+#
+# Fail fast if tailwindcss is missing.
 TAILWINDCSS ?= tailwindcss
+ifeq (, $(shell command -v $(TAILWINDCSS) 2> /dev/null))
+	$(error Could not find tailwindcss. Is it installed correctly and in PATH?)
+endif
 
 # Build tool flags.
 TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
 TAILWIND_FLAGS ?= --minify
 
 # Resolved path to the TinyGo installation directory.
+#
+# Fail fast if TINYGOROOT is not set.
 TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT 2>/dev/null)
+ifeq ($(TINYGOROOT), )
+	$(error Could not determine TINYGOROOT. Is tinygo configured correctly?)
+endif
 
 # Directories to exclude from source tracking.
 IGNORE_DIRS := -type d -name .git -prune -o
