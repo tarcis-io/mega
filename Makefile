@@ -23,7 +23,7 @@ endif
 
 # Build tool flags.
 TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
-TAILWIND_FLAGS ?= --minify
+TAILWIND_FLAGS ?= --minify --content="./**/*.go" --content="./**/*.tmpl"
 
 # Resolved path to the TinyGo installation directory.
 #
@@ -107,11 +107,10 @@ $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS)
 	@mkdir -p $(dir $@)
 	@$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM)/$*
 
-# clean removes all generated build artifacts and empty directories.
+# clean removes all generated build artifacts and output directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
-	@rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(WASM_MODULES)
-	@[ -d $(WEB_PUBLIC) ] && find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
+	@rm -rf $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM)
 
 # help displays this help message.
 help:
