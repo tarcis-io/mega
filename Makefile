@@ -36,7 +36,7 @@ endif
 # --- Configuration & Flags ---
 
 TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
-TAILWIND_FLAGS ?= --minify --content="./**/*.go" --content="./**/*.tmpl"
+TAILWIND_FLAGS ?= --minify --content="./**/*.go,./**/*.tmpl"
 
 # --- Source Tracking ---
 
