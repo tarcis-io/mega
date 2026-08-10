@@ -1,40 +1,47 @@
 # Makefile for the Mega application.
 #
-# It automates the setup and compilation of the web assets and WebAssembly modules.
+# Automates the setup and compilation of web assets and WebAssembly modules.
 
 # Default target to execute when no arguments are provided.
 .DEFAULT_GOAL := all
 
-# The TinyGo executable used to compile Go code to WebAssembly.
-#
+# Verbosity control. Run `make V=1` to see the actual commands being executed.
+V ?= 0
+ifeq ($(V),1)
+	Q :=
+else
+	Q := @
+endif
+
+# --- Tooling Setup ---
+
 # Fail fast if tinygo is missing.
 TINYGO ?= tinygo
 ifeq (, $(shell command -v $(TINYGO) 2> /dev/null))
 	$(error Could not find tinygo. Is it installed correctly and in PATH?)
 endif
 
-# The Tailwind CSS CLI executable used to compile CSS styles.
-#
-# Fail fast if tailwindcss is missing.
-TAILWINDCSS ?= tailwindcss
-ifeq (, $(shell command -v $(TAILWINDCSS) 2> /dev/null))
-	$(error Could not find tailwindcss. Is it installed correctly and in PATH?)
-endif
-
-# Build tool flags.
-TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
-TAILWIND_FLAGS ?= --minify --content="./**/*.go" --content="./**/*.tmpl"
-
-# Resolved path to the TinyGo installation directory.
-#
 # Fail fast if TINYGOROOT is not set.
 TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT 2>/dev/null)
 ifeq ($(TINYGOROOT), )
 	$(error Could not determine TINYGOROOT. Is tinygo configured correctly?)
 endif
 
-# Directories to exclude from source tracking.
-IGNORE_DIRS := -type d -name .git -prune -o
+# Fail fast if tailwindcss is missing.
+TAILWINDCSS ?= tailwindcss
+ifeq (, $(shell command -v $(TAILWINDCSS) 2> /dev/null))
+	$(error Could not find tailwindcss. Is it installed correctly and in PATH?)
+endif
+
+# --- Configuration & Flags ---
+
+TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
+TAILWIND_FLAGS ?= --minify --content="./**/*.go" --content="./**/*.tmpl"
+
+# --- Source Tracking ---
+
+# Directories to exclude from source tracking to speed up 'find'.
+IGNORE_DIRS := -type d \( -name .git -o -name vendor -o -name web/public \) -prune -o
 
 # Tracks all Go files to trigger WASM rebuilds on internal package changes.
 GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' -print)
@@ -42,35 +49,38 @@ GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' -print)
 # Tracks all UI files to trigger CSS rebuilds on Tailwind utility class changes.
 UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' -o -name '*.tmpl' \) -print)
 
-# Hierarchical directory structure for source code and compiled assets.
-CMD                = cmd
-CMD_WASM           = $(CMD)/wasm
-WEB                = web
-WEB_PUBLIC         = $(WEB)/public
-WEB_PUBLIC_CSS     = $(WEB_PUBLIC)/css
-WEB_PUBLIC_JS      = $(WEB_PUBLIC)/js
-WEB_PUBLIC_JS_WASM = $(WEB_PUBLIC_JS)/wasm
-WEB_PUBLIC_WASM    = $(WEB_PUBLIC)/wasm
-WEB_SRC            = $(WEB)/src
-WEB_SRC_CSS        = $(WEB_SRC)/css
+# --- Directory Structure ---
 
-# Source files used as inputs for builds and environment setup.
-APP_CSS_INPUT      = $(WEB_SRC_CSS)/app.css
-WASM_EXEC_JS_INPUT = $(TINYGOROOT)/targets/wasm_exec.js
+CMD                := cmd
+CMD_WASM           := $(CMD)/wasm
+WEB                := web
+WEB_PUBLIC         := $(WEB)/public
+WEB_PUBLIC_CSS     := $(WEB_PUBLIC)/css
+WEB_PUBLIC_JS      := $(WEB_PUBLIC)/js
+WEB_PUBLIC_JS_WASM := $(WEB_PUBLIC_JS)/wasm
+WEB_PUBLIC_WASM    := $(WEB_PUBLIC)/wasm
+WEB_SRC            := $(WEB)/src
+WEB_SRC_CSS        := $(WEB_SRC)/css
 
-# Generated artifacts and output files from the build process.
-APP_CSS_OUTPUT      = $(WEB_PUBLIC_CSS)/app.css
-WASM_EXEC_JS_OUTPUT = $(WEB_PUBLIC_JS_WASM)/wasm_exec.js
+# --- Inputs and Outputs ---
+
+APP_CSS_INPUT      := $(WEB_SRC_CSS)/app.css
+WASM_EXEC_JS_INPUT := $(TINYGOROOT)/targets/wasm_exec.js
+
+APP_CSS_OUTPUT      := $(WEB_PUBLIC_CSS)/app.css
+WASM_EXEC_JS_OUTPUT := $(WEB_PUBLIC_JS_WASM)/wasm_exec.js
 
 # List of WebAssembly modules to be compiled.
-WASM_MODULES = \
+WASM_MODULES := \
 	$(WEB_PUBLIC_WASM)/about.wasm \
 	$(WEB_PUBLIC_WASM)/home.wasm
 
-# Non-file action aliases (phony targets).
+# Non-file action aliases.
 .PHONY: all setup build build-css build-wasm clean help
 
-# all is the default target. It sets up the environment and compiles all application assets.
+# --- Targets ---
+
+# all is the default target. It sets up the environment and compiles all assets.
 all: setup build
 
 # build executes all compilation targets for the application.
@@ -82,42 +92,38 @@ setup: $(WASM_EXEC_JS_OUTPUT)
 # Copy the WebAssembly execution script from TinyGo if it doesn't exist or is updated.
 $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 	@echo "Setting up wasm_exec.js..."
-	@mkdir -p $(dir $@)
-	@cp $< $@
+	$(Q)mkdir -p $(dir $@)
+	$(Q)cp $< $@
 
 # build-css compiles the styles to output a CSS file.
 build-css: $(APP_CSS_OUTPUT)
 
-# Compile Tailwind CSS.
-#
-# Tracks UI files to catch utility class changes.
+# Compile Tailwind CSS. Tracks UI files to catch utility class changes.
 $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 	@echo "Compiling CSS..."
-	@mkdir -p $(dir $@)
-	@$(TAILWINDCSS) $(TAILWIND_FLAGS) -i $< -o $@
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(TAILWINDCSS) $(TAILWIND_FLAGS) -i $< -o $@
 
 # build-wasm compiles the Go packages to WebAssembly modules.
 build-wasm: $(WASM_MODULES)
 
-# Compile WebAssembly modules.
-#
-# Tracks all Go files to catch internal package changes.
+# Compile WebAssembly modules. Tracks all Go files to catch internal package changes.
 $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS)
 	@echo "Compiling $* WebAssembly module..."
-	@mkdir -p $(dir $@)
-	@$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM)/$*
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM)/$*
 
 # clean removes all generated build artifacts and output directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
-	@rm -rf $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM)
+	$(Q)rm -rf $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM)
 
 # help displays this help message.
 help:
-	@echo "Usage: make [target]"
+	@echo "Usage: make [target] [V=1 (for verbose output)]"
 	@echo ""
 	@echo "Targets:"
-	@awk '/^[a-zA-Z\-\_0-9]+:/ { \
+	@awk '/^[a-zA-Z0-9_-]+:/ { \
 		helpMessage = match(lastLine, /^# (.*)/); \
 		if (helpMessage) { \
 			helpCommand = substr($$1, 0, index($$1, ":")-1); \
