@@ -41,7 +41,7 @@ TAILWIND_FLAGS ?= --minify --content="./**/*.go,./**/*.tmpl"
 # --- Source Tracking ---
 
 # Directories to exclude from source tracking to speed up 'find'.
-IGNORE_DIRS := -type d \( -name .git -o -name vendor -o -name web/public \) -prune -o
+IGNORE_DIRS := -type d \( -name .git -o -name vendor -o -path web/public \) -prune -o
 
 # Tracks all Go files to trigger WASM rebuilds on internal package changes.
 GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' -print)
@@ -80,13 +80,13 @@ WASM_MODULES := \
 
 # --- Targets ---
 
-# all is the default target. It sets up the environment and compiles all assets.
+# Sets up the environment and compiles all assets. This is the default target.
 all: setup build
 
-# build executes all compilation targets for the application.
+# Executes all compilation targets for the application.
 build: build-css build-wasm
 
-# setup prepares dependencies for the application.
+# Prepares dependencies for the application.
 setup: $(WASM_EXEC_JS_OUTPUT)
 
 # Copy the WebAssembly execution script from TinyGo if it doesn't exist or is updated.
@@ -95,7 +95,7 @@ $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 	$(Q)mkdir -p $(@D)
 	$(Q)cp $< $@
 
-# build-css compiles the styles to output a CSS file.
+# Compiles the styles to output a CSS file.
 build-css: $(APP_CSS_OUTPUT)
 
 # Compile Tailwind CSS. Tracks UI files to catch utility class changes.
@@ -104,7 +104,7 @@ $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 	$(Q)mkdir -p $(@D)
 	$(Q)$(TAILWINDCSS) $(TAILWIND_FLAGS) -i $< -o $@
 
-# build-wasm compiles the Go packages to WebAssembly modules.
+# Compiles the Go packages to WebAssembly modules.
 build-wasm: $(WASM_MODULES)
 
 # Compile WebAssembly modules. Tracks all Go files to catch internal package changes.
@@ -113,12 +113,12 @@ $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS)
 	$(Q)mkdir -p $(@D)
 	$(Q)$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM)/$*
 
-# clean removes all generated build artifacts and output directories.
+# Removes all generated build artifacts and output directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
 	$(Q)rm -rf $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM)
 
-# help displays this help message.
+# Displays this help message.
 help:
 	@echo "Usage: make [target] [V=1 (for verbose output)]"
 	@echo ""
