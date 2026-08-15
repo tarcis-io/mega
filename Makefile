@@ -92,7 +92,7 @@ setup: $(WASM_EXEC_JS_OUTPUT)
 # Copy the WebAssembly execution script from TinyGo if it doesn't exist or is updated.
 $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 	@echo "Setting up wasm_exec.js..."
-	$(Q)mkdir -p $(dir $@)
+	$(Q)mkdir -p $(@D)
 	$(Q)cp $< $@
 
 # build-css compiles the styles to output a CSS file.
@@ -101,7 +101,7 @@ build-css: $(APP_CSS_OUTPUT)
 # Compile Tailwind CSS. Tracks UI files to catch utility class changes.
 $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 	@echo "Compiling CSS..."
-	$(Q)mkdir -p $(dir $@)
+	$(Q)mkdir -p $(@D)
 	$(Q)$(TAILWINDCSS) $(TAILWIND_FLAGS) -i $< -o $@
 
 # build-wasm compiles the Go packages to WebAssembly modules.
@@ -110,7 +110,7 @@ build-wasm: $(WASM_MODULES)
 # Compile WebAssembly modules. Tracks all Go files to catch internal package changes.
 $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS)
 	@echo "Compiling $* WebAssembly module..."
-	$(Q)mkdir -p $(dir $@)
+	$(Q)mkdir -p $(@D)
 	$(Q)$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM)/$*
 
 # clean removes all generated build artifacts and output directories.
