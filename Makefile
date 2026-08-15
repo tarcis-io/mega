@@ -36,7 +36,7 @@ endif
 # --- Configuration & Flags ---
 
 TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
-TAILWIND_FLAGS ?= --minify --content="./**/*.go,./**/*.tmpl"
+TAILWIND_FLAGS ?= --minify --content='./**/*.go,./**/*.tmpl'
 
 # --- Source Tracking ---
 
@@ -89,7 +89,7 @@ build: build-css build-wasm
 # Prepares dependencies for the application.
 setup: $(WASM_EXEC_JS_OUTPUT)
 
-# Copy the WebAssembly execution script from TinyGo if it doesn't exist or is updated.
+# Copies the WebAssembly execution script from TinyGo if it doesn't exist or is updated.
 $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 	@echo "Setting up wasm_exec.js..."
 	$(Q)mkdir -p $(@D)
@@ -98,7 +98,7 @@ $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 # Compiles the styles to output a CSS file.
 build-css: $(APP_CSS_OUTPUT)
 
-# Compile Tailwind CSS. Tracks UI files to catch utility class changes.
+# Compiles Tailwind CSS. Tracks UI files to catch utility class changes.
 $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 	@echo "Compiling CSS..."
 	$(Q)mkdir -p $(@D)
@@ -107,7 +107,7 @@ $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 # Compiles the Go packages to WebAssembly modules.
 build-wasm: $(WASM_MODULES)
 
-# Compile WebAssembly modules. Tracks all Go files to catch internal package changes.
+# Compiles WebAssembly modules. Tracks all Go files to catch internal package changes.
 $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS)
 	@echo "Compiling $* WebAssembly module..."
 	$(Q)mkdir -p $(@D)
