@@ -2,7 +2,7 @@
 #
 # Automates the setup and compilation of web assets and WebAssembly modules.
 
-# Default target to execute when no arguments are provided.
+# Default target to execute when no target is specified on make command.
 .DEFAULT_GOAL := all
 
 # Verbosity control. Run `make V=1` to see the actual commands being executed.
@@ -23,7 +23,7 @@ endif
 
 # Fail fast if TINYGOROOT is not set.
 TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT 2>/dev/null)
-ifeq ($(TINYGOROOT), )
+ifeq ($(TINYGOROOT),)
 	$(error Could not determine TINYGOROOT. Is tinygo configured correctly?)
 endif
 
@@ -40,8 +40,8 @@ TAILWIND_FLAGS ?= --minify --content='./**/*.go,./**/*.tmpl'
 
 # --- Source Tracking ---
 
-# Directories to exclude from source tracking to speed up 'find'.
-IGNORE_DIRS := -type d \( -name .git -o -name vendor -o -path web/public \) -prune -o
+# Directories to exclude from source tracking.
+IGNORE_DIRS := -type d \( -name .git -o -name vendor -o -path ./web/public \) -prune -o
 
 # Tracks all Go files to trigger WASM rebuilds on internal package changes.
 GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' -print)
@@ -126,7 +126,7 @@ help:
 	@awk '/^[a-zA-Z0-9_-]+:/ { \
 		helpMessage = match(lastLine, /^# (.*)/); \
 		if (helpMessage) { \
-			helpCommand = substr($$1, 0, index($$1, ":")-1); \
+			helpCommand = substr($$1, 1, index($$1, ":")-1); \
 			helpDesc = substr(lastLine, RSTART + 2, RLENGTH); \
 			printf "  \033[36m%-15s\033[0m %s\n", helpCommand, helpDesc; \
 		} \
