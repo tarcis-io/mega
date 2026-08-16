@@ -20,7 +20,7 @@ const (
 	defaultServerHost              = ""
 	defaultServerPort              = "8080"
 	defaultServerReadTimeout       = 15 * time.Second
-	defaultServerReadHeaderTimeout = 05 * time.Second
+	defaultServerReadHeaderTimeout = 5 * time.Second
 	defaultServerWriteTimeout      = 15 * time.Second
 	defaultServerIdleTimeout       = 60 * time.Second
 	defaultServerShutdownTimeout   = 30 * time.Second
@@ -35,8 +35,13 @@ func Load() (*Config, error) {
 
 	cfg := &Config{
 		Server: Server{
-			Host: p.string(serverHostKey, defaultServerHost),
-			Port: p.string(serverPortKey, defaultServerPort),
+			Host:              p.string(serverHostKey, defaultServerHost),
+			Port:              p.string(serverPortKey, defaultServerPort),
+			ReadTimeout:       p.duration(serverReadTimeoutKey, defaultServerReadTimeout),
+			ReadHeaderTimeout: p.duration(serverReadHeaderTimeoutKey, defaultServerReadHeaderTimeout),
+			WriteTimeout:      p.duration(serverWriteTimeoutKey, defaultServerWriteTimeout),
+			IdleTimeout:       p.duration(serverIdleTimeoutKey, defaultServerIdleTimeout),
+			ShutdownTimeout:   p.duration(serverShutdownTimeoutKey, defaultServerShutdownTimeout),
 		},
 	}
 
@@ -75,4 +80,19 @@ func (p *parser) string(key, fallback string) string {
 	}
 
 	return fallback
+}
+
+func (p *parser) duration(key string, fallback time.Duration) time.Duration {
+	valStr := p.string(key, "")
+	if valStr == "" {
+		return fallback
+	}
+
+	val, err := time.ParseDuration(valStr)
+	if err != nil {
+		p.errs = append(p.errs, fmt.Errorf("failed to parse time.Duration %s=%q: %w", key, valStr, err))
+		return fallback
+	}
+
+	return val
 }
