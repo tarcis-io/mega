@@ -6,12 +6,25 @@ import (
 	"os"
 )
 
+const (
+	serverHostKey = "SERVER_HOST"
+	serverPortKey = "SERVER_PORT"
+
+	defaultServerHost = ""
+	defaultServerPort = "8080"
+)
+
 type Config struct {
-	Server Server
+	Server *Server
 }
 
 func New() *Config {
-	return &Config{}
+	return &Config{
+		Server: &Server{
+			Host: defaultServerHost,
+			Port: defaultServerPort,
+		},
+	}
 }
 
 func Load() (*Config, error) {
