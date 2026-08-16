@@ -29,9 +29,8 @@ func Load() (*Config, error) {
 		},
 	}
 
-	err := p.Err()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load configurations: %w", err)
+	if err := p.Err(); err != nil {
+		return nil, fmt.Errorf("failed to load configuration: %w", err)
 	}
 
 	return cfg, nil
