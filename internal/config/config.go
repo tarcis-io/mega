@@ -5,14 +5,25 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 )
 
 const (
-	serverHostKey = "SERVER_HOST"
-	serverPortKey = "SERVER_PORT"
+	serverHostKey              = "SERVER_HOST"
+	serverPortKey              = "SERVER_PORT"
+	serverReadTimeoutKey       = "SERVER_READ_TIMEOUT"
+	serverReadHeaderTimeoutKey = "SERVER_READ_HEADER_TIMEOUT"
+	serverWriteTimeoutKey      = "SERVER_WRITE_TIMEOUT"
+	serverIdleTimeoutKey       = "SERVER_IDLE_TIMEOUT"
+	serverShutdownTimeoutKey   = "SERVER_SHUTDOWN_TIMEOUT"
 
-	defaultServerHost = ""
-	defaultServerPort = "8080"
+	defaultServerHost              = ""
+	defaultServerPort              = "8080"
+	defaultServerReadTimeout       = 15 * time.Second
+	defaultServerReadHeaderTimeout = 05 * time.Second
+	defaultServerWriteTimeout      = 15 * time.Second
+	defaultServerIdleTimeout       = 60 * time.Second
+	defaultServerShutdownTimeout   = 30 * time.Second
 )
 
 type Config struct {
@@ -37,8 +48,13 @@ func Load() (*Config, error) {
 }
 
 type Server struct {
-	Host string
-	Port string
+	Host              string
+	Port              string
+	ReadTimeout       time.Duration
+	ReadHeaderTimeout time.Duration
+	WriteTimeout      time.Duration
+	IdleTimeout       time.Duration
+	ShutdownTimeout   time.Duration
 }
 
 func (s *Server) Address() string {
