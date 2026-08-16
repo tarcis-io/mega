@@ -8,9 +8,9 @@
 # Verbosity control. Run `make V=1` to see the actual commands being executed.
 V ?= 0
 ifeq ($(V),1)
-	Q :=
+Q :=
 else
-	Q := @
+Q := @
 endif
 
 # --- Tooling Setup ---
@@ -18,24 +18,27 @@ endif
 # Fail fast if tinygo is missing.
 TINYGO ?= tinygo
 ifeq (, $(shell command -v $(TINYGO) 2> /dev/null))
-	$(error Could not find tinygo. Is it installed correctly and in PATH?)
+$(error Could not find tinygo. Is it installed correctly and in PATH?)
 endif
 
 # Fail fast if TINYGOROOT is not set.
 TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT 2>/dev/null)
 ifeq ($(TINYGOROOT),)
-	$(error Could not determine TINYGOROOT. Is tinygo configured correctly?)
+$(error Could not determine TINYGOROOT. Is tinygo configured correctly?)
 endif
 
 # Fail fast if tailwindcss is missing.
 TAILWINDCSS ?= tailwindcss
 ifeq (, $(shell command -v $(TAILWINDCSS) 2> /dev/null))
-	$(error Could not find tailwindcss. Is it installed correctly and in PATH?)
+$(error Could not find tailwindcss. Is it installed correctly and in PATH?)
 endif
 
 # --- Configuration & Flags ---
 
-TINYGO_FLAGS   ?= -target=wasm -opt=s -no-debug
+# Size-optimized WASM build, debug info stripped.
+TINYGO_FLAGS ?= -target=wasm -opt=s -no-debug
+
+# Minifies output CSS.
 TAILWIND_FLAGS ?= --minify
 
 # --- Source Tracking ---
