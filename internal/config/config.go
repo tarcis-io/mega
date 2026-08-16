@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -26,22 +28,33 @@ const (
 	defaultServerShutdownTimeout   = 30 * time.Second
 )
 
+const (
+	minPort = 1
+	maxPort = 65535
+)
+
 type Config struct {
 	Server Server
 }
 
 func Load() (*Config, error) {
-	p := &parser{}
+	return load(os.LookupEnv)
+}
+
+func load(lookup func(key string) (string, bool)) (*Config, error) {
+	p := &parser{
+		lookup: lookup,
+	}
 
 	cfg := &Config{
 		Server: Server{
-			Host:              p.getString(serverHostKey, defaultServerHost),
-			Port:              p.getString(serverPortKey, defaultServerPort),
-			ReadTimeout:       p.getDuration(serverReadTimeoutKey, defaultServerReadTimeout),
-			ReadHeaderTimeout: p.getDuration(serverReadHeaderTimeoutKey, defaultServerReadHeaderTimeout),
-			WriteTimeout:      p.getDuration(serverWriteTimeoutKey, defaultServerWriteTimeout),
-			IdleTimeout:       p.getDuration(serverIdleTimeoutKey, defaultServerIdleTimeout),
-			ShutdownTimeout:   p.getDuration(serverShutdownTimeoutKey, defaultServerShutdownTimeout),
+			Host:              p.Host(serverHostKey, defaultServerHost),
+			Port:              p.Port(serverPortKey, defaultServerPort),
+			ReadTimeout:       p.Timeout(serverReadTimeoutKey, defaultServerReadTimeout),
+			ReadHeaderTimeout: p.Timeout(serverReadHeaderTimeoutKey, defaultServerReadHeaderTimeout),
+			WriteTimeout:      p.Timeout(serverWriteTimeoutKey, defaultServerWriteTimeout),
+			IdleTimeout:       p.Timeout(serverIdleTimeoutKey, defaultServerIdleTimeout),
+			ShutdownTimeout:   p.Timeout(serverShutdownTimeoutKey, defaultServerShutdownTimeout),
 		},
 	}
 
@@ -67,32 +80,81 @@ func (s *Server) Address() string {
 }
 
 type parser struct {
-	errs []error
+	lookup func(key string) (string, bool)
+	errs   []error
 }
 
-func (p *parser) Err() error {
-	return errors.Join(p.errs...)
-}
-
-func (p *parser) getString(key, fallback string) string {
-	if val, ok := os.LookupEnv(key); ok {
+func (p *parser) String(key, fallback string) string {
+	if val, ok := p.lookup(key); ok {
 		return val
 	}
 
 	return fallback
 }
 
-func (p *parser) getDuration(key string, fallback time.Duration) time.Duration {
-	valStr := p.getString(key, "")
-	if valStr == "" {
+func (p *parser) Host(key, fallback string) string {
+	val, ok := p.lookup(key)
+	if !ok {
+		return fallback
+	}
+
+	if strings.ContainsAny(val, " \t\r\n") {
+		p.addErrorf("invalid host %s=%q: cannot contain whitespace", key, val)
+		return fallback
+	}
+
+	return val
+}
+
+func (p *parser) Port(key, fallback string) string {
+	val, ok := p.lookup(key)
+	if !ok {
+		return fallback
+	}
+
+	port, err := strconv.Atoi(val)
+	if err != nil {
+		p.addErrorf("invalid port %s=%q: must be a number", key, val)
+		return fallback
+	}
+
+	if port < minPort || port > maxPort {
+		p.addErrorf("invalid port %s=%q: must be between %d and %d", key, val, minPort, maxPort)
+		return fallback
+	}
+
+	return val
+}
+
+func (p *parser) Duration(key string, fallback time.Duration) time.Duration {
+	valStr, ok := p.lookup(key)
+	if !ok {
 		return fallback
 	}
 
 	val, err := time.ParseDuration(valStr)
 	if err != nil {
-		p.errs = append(p.errs, fmt.Errorf("failed to parse time.Duration %s=%q: %w", key, valStr, err))
+		p.addErrorf("invalid duration %s=%q: %w", key, valStr, err)
 		return fallback
 	}
 
 	return val
+}
+
+func (p *parser) Timeout(key string, fallback time.Duration) time.Duration {
+	val := p.Duration(key, fallback)
+	if val < 0 {
+		p.addErrorf("invalid timeout %s=%q: must be positive", key, val.String())
+		return fallback
+	}
+
+	return val
+}
+
+func (p *parser) Err() error {
+	return errors.Join(p.errs...)
+}
+
+func (p *parser) addErrorf(format string, args ...any) {
+	p.errs = append(p.errs, fmt.Errorf(format, args...))
 }
