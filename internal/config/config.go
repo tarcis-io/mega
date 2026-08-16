@@ -35,13 +35,13 @@ func Load() (*Config, error) {
 
 	cfg := &Config{
 		Server: Server{
-			Host:              p.string(serverHostKey, defaultServerHost),
-			Port:              p.string(serverPortKey, defaultServerPort),
-			ReadTimeout:       p.duration(serverReadTimeoutKey, defaultServerReadTimeout),
-			ReadHeaderTimeout: p.duration(serverReadHeaderTimeoutKey, defaultServerReadHeaderTimeout),
-			WriteTimeout:      p.duration(serverWriteTimeoutKey, defaultServerWriteTimeout),
-			IdleTimeout:       p.duration(serverIdleTimeoutKey, defaultServerIdleTimeout),
-			ShutdownTimeout:   p.duration(serverShutdownTimeoutKey, defaultServerShutdownTimeout),
+			Host:              p.getString(serverHostKey, defaultServerHost),
+			Port:              p.getString(serverPortKey, defaultServerPort),
+			ReadTimeout:       p.getDuration(serverReadTimeoutKey, defaultServerReadTimeout),
+			ReadHeaderTimeout: p.getDuration(serverReadHeaderTimeoutKey, defaultServerReadHeaderTimeout),
+			WriteTimeout:      p.getDuration(serverWriteTimeoutKey, defaultServerWriteTimeout),
+			IdleTimeout:       p.getDuration(serverIdleTimeoutKey, defaultServerIdleTimeout),
+			ShutdownTimeout:   p.getDuration(serverShutdownTimeoutKey, defaultServerShutdownTimeout),
 		},
 	}
 
@@ -74,7 +74,7 @@ func (p *parser) Err() error {
 	return errors.Join(p.errs...)
 }
 
-func (p *parser) string(key, fallback string) string {
+func (p *parser) getString(key, fallback string) string {
 	if val, ok := os.LookupEnv(key); ok {
 		return val
 	}
@@ -82,8 +82,8 @@ func (p *parser) string(key, fallback string) string {
 	return fallback
 }
 
-func (p *parser) duration(key string, fallback time.Duration) time.Duration {
-	valStr := p.string(key, "")
+func (p *parser) getDuration(key string, fallback time.Duration) time.Duration {
+	valStr := p.getString(key, "")
 	if valStr == "" {
 		return fallback
 	}
