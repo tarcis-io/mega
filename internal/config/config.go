@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"os"
 )
@@ -28,7 +29,21 @@ func New() *Config {
 }
 
 func Load() (*Config, error) {
-	return New(), nil
+	p := &parser{}
+
+	config := &Config{
+		Server: &Server{
+			Host: p.string(serverHostKey, defaultServerHost),
+			Port: p.string(serverPortKey, defaultServerPort),
+		},
+	}
+
+	err := p.Err()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load configurations: %w", err)
+	}
+
+	return config, nil
 }
 
 type Server struct {
