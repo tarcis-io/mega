@@ -16,23 +16,14 @@ const (
 )
 
 type Config struct {
-	Server *Server
-}
-
-func New() *Config {
-	return &Config{
-		Server: &Server{
-			Host: defaultServerHost,
-			Port: defaultServerPort,
-		},
-	}
+	Server Server
 }
 
 func Load() (*Config, error) {
 	p := &parser{}
 
-	config := &Config{
-		Server: &Server{
+	cfg := &Config{
+		Server: Server{
 			Host: p.string(serverHostKey, defaultServerHost),
 			Port: p.string(serverPortKey, defaultServerPort),
 		},
@@ -43,7 +34,7 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to load configurations: %w", err)
 	}
 
-	return config, nil
+	return cfg, nil
 }
 
 type Server struct {
