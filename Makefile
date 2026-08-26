@@ -47,7 +47,7 @@ TAILWIND_FLAGS ?= --minify
 IGNORE_DIRS := -type d \( -name .git -o -name vendor -o -path ./web/public \) -prune -o
 
 # Tracks all Go files to trigger WASM rebuilds on internal package changes.
-GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' -print)
+GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' ! -name '*_test.go' -print)
 
 # Tracks all UI files to trigger CSS rebuilds on Tailwind utility class changes.
 UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' -o -name '*.tmpl' \) -print)
@@ -111,7 +111,7 @@ $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 build-wasm: $(WASM_MODULES)
 
 # Compiles WebAssembly modules. Tracks all Go files to catch internal package changes.
-$(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS)
+$(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS) go.mod $(wildcard go.sum)
 	@echo "Compiling $* WebAssembly module..."
 	$(Q)mkdir -p $(@D)
 	$(Q)$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM)/$*
