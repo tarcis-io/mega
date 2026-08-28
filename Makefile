@@ -36,7 +36,7 @@ endif
 # --- Configuration & Flags ---
 
 # Size-optimized WASM build, debug info stripped.
-TINYGO_FLAGS ?= -target=wasm -opt=s -no-debug
+TINYGO_FLAGS ?= -target=wasm -opt=s -panic=trap -no-debug
 
 # Minifies output CSS.
 TAILWIND_FLAGS ?= --minify
@@ -74,7 +74,7 @@ APP_CSS_OUTPUT      := $(WEB_PUBLIC_CSS)/app.css
 WASM_EXEC_JS_OUTPUT := $(WEB_PUBLIC_JS_WASM)/wasm_exec.js
 
 # WebAssembly modules to be compiled.
-WASM_MODULES := $(patsubst $(CMD_WASM)/%,$(WEB_PUBLIC_WASM)/%.wasm,$(wildcard $(CMD_WASM)/*))
+WASM_MODULES := $(patsubst $(CMD_WASM)/%/main.go,$(WEB_PUBLIC_WASM)/%.wasm,$(wildcard $(CMD_WASM)/*/main.go))
 
 # Non-file action aliases.
 .PHONY: all setup build build-css build-wasm clean help
