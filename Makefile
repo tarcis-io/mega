@@ -73,10 +73,8 @@ WASM_EXEC_JS_INPUT := $(TINYGOROOT)/targets/wasm_exec.js
 APP_CSS_OUTPUT      := $(WEB_PUBLIC_CSS)/app.css
 WASM_EXEC_JS_OUTPUT := $(WEB_PUBLIC_JS_WASM)/wasm_exec.js
 
-# List of WebAssembly modules to be compiled.
-WASM_MODULES := \
-	$(WEB_PUBLIC_WASM)/about.wasm \
-	$(WEB_PUBLIC_WASM)/home.wasm
+# WebAssembly modules to be compiled.
+WASM_MODULES := $(patsubst $(CMD_WASM)/%,$(WEB_PUBLIC_WASM)/%.wasm,$(wildcard $(CMD_WASM)/*))
 
 # Non-file action aliases.
 .PHONY: all setup build build-css build-wasm clean help
