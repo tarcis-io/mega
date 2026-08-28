@@ -20,7 +20,7 @@ const (
 	serverShutdownTimeoutKey   = "SERVER_SHUTDOWN_TIMEOUT"
 
 	defaultServerHost              = ""
-	defaultServerPort              = "8080"
+	defaultServerPort              = 8080
 	defaultServerReadTimeout       = 15 * time.Second
 	defaultServerReadHeaderTimeout = 5 * time.Second
 	defaultServerWriteTimeout      = 15 * time.Second
@@ -67,7 +67,7 @@ func load(lookup func(key string) (string, bool)) (*Config, error) {
 
 type Server struct {
 	Host              string
-	Port              string
+	Port              int
 	ReadTimeout       time.Duration
 	ReadHeaderTimeout time.Duration
 	WriteTimeout      time.Duration
@@ -76,7 +76,7 @@ type Server struct {
 }
 
 func (s *Server) Address() string {
-	return net.JoinHostPort(s.Host, s.Port)
+	return net.JoinHostPort(s.Host, strconv.Itoa(s.Port))
 }
 
 type parser struct {
@@ -90,6 +90,21 @@ func (p *parser) String(key, fallback string) string {
 	}
 
 	return fallback
+}
+
+func (p *parser) Int(key string, fallback int) int {
+	valStr, ok := p.lookup(key)
+	if !ok {
+		return fallback
+	}
+
+	val, err := strconv.Atoi(valStr)
+	if err != nil {
+		p.addErrorf("invalid int %s=%q: must be a number", key, valStr)
+		return fallback
+	}
+
+	return val
 }
 
 func (p *parser) Host(key, fallback string) string {
@@ -106,20 +121,10 @@ func (p *parser) Host(key, fallback string) string {
 	return val
 }
 
-func (p *parser) Port(key, fallback string) string {
-	val, ok := p.lookup(key)
-	if !ok {
-		return fallback
-	}
-
-	port, err := strconv.Atoi(val)
-	if err != nil {
-		p.addErrorf("invalid port %s=%q: must be a number", key, val)
-		return fallback
-	}
-
-	if port < minPort || port > maxPort {
-		p.addErrorf("invalid port %s=%q: must be between %d and %d", key, val, minPort, maxPort)
+func (p *parser) Port(key string, fallback int) int {
+	val := p.Int(key, fallback)
+	if val < minPort || val > maxPort {
+		p.addErrorf("invalid port %s=%q: must be between %d and %d", key, strconv.Itoa(val), minPort, maxPort)
 		return fallback
 	}
 
