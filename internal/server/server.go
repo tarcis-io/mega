@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/tarcis-io/mega/internal/config"
 	"github.com/tarcis-io/mega/web"
 )
 
@@ -35,7 +36,7 @@ const (
 // Run initializes and starts the primary HTTP server.
 //
 // It orchestrates configuration, routing, and lifecycle management.
-func Run() error {
+func Run(_ *config.Config) error {
 	addr := resolveAddr()
 
 	router, err := newRouter()
