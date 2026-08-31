@@ -187,7 +187,7 @@ func (p *parser) Duration(key string, fallback time.Duration) time.Duration {
 func (p *parser) Timeout(key string, fallback time.Duration) time.Duration {
 	val := p.Duration(key, fallback)
 	if val < 0 {
-		p.addErrorf("invalid timeout %s=%q: must be positive", key, val.String())
+		p.addErrorf("invalid timeout %s=%q: must not be negative", key, val.String())
 		return fallback
 	}
 
