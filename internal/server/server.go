@@ -15,7 +15,13 @@ const (
 )
 
 func Run(cfg *config.Config) error {
-	return nil
+	router, err := newRouter()
+	if err != nil {
+		return err
+	}
+
+	srv := newServer(cfg, router)
+	return srv.ListenAndServe()
 }
 
 func newRouter() (*http.ServeMux, error) {
@@ -28,4 +34,15 @@ func newRouter() (*http.ServeMux, error) {
 	router.Handle(publicPrefix, http.StripPrefix(publicPrefix, http.FileServerFS(publicFS)))
 
 	return router, nil
+}
+
+func newServer(cfg *config.Config, router http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              cfg.Server.Address(),
+		ReadTimeout:       cfg.Server.ReadTimeout,
+		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
+		WriteTimeout:      cfg.Server.WriteTimeout,
+		IdleTimeout:       cfg.Server.IdleTimeout,
+		Handler:           router,
+	}
 }
