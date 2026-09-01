@@ -72,7 +72,7 @@ func load(lookup func(key string) (string, bool)) (*Config, error) {
 	}
 
 	if err := p.Err(); err != nil {
-		return nil, fmt.Errorf("failed to load configuration: %w", err)
+		return nil, err
 	}
 
 	return cfg, nil
