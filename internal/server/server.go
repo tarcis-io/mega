@@ -1,9 +1,13 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/tarcis-io/mega/internal/config"
 	"github.com/tarcis-io/mega/web"
@@ -15,6 +19,9 @@ const (
 )
 
 func Run(cfg *config.Config) error {
+	_, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	router, err := newRouter()
 	if err != nil {
 		return err
