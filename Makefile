@@ -50,7 +50,7 @@ IGNORE_DIRS := -type d \( -name .git -o -name vendor -o -path ./web/public \) -p
 GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' ! -name '*_test.go' -print)
 
 # Tracks all UI files to trigger CSS rebuilds on Tailwind utility class changes.
-UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' -o -name '*.tmpl' \) -print)
+UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' ! -name '*_test.go' -o -name '*.tmpl' \) -print)
 
 # --- Directory Structure ---
 
@@ -81,7 +81,7 @@ WASM_MODULES := $(patsubst $(CMD_WASM)/%/main.go,$(WEB_PUBLIC_WASM)/%.wasm,$(wil
 
 # --- Targets ---
 
-# Sets up the environment and compiles all assets. This is the default target.
+# Default target: sets up the environment and compiles all assets.
 all: setup build
 
 # Executes all compilation targets for the application.
@@ -117,7 +117,7 @@ $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS) go.mod $(wildcard go.sum)
 # Removes all generated build artifacts and output directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
-	$(Q)rm -rf $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM)
+	$(Q)rm -rf $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(WASM_MODULES)
 
 # Displays this help message.
 help:
