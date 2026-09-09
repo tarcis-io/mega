@@ -35,7 +35,7 @@ const (
 
 // Port constraints for valid TCP/UDP network ranges.
 const (
-	minPort = 1
+	minPort = 0
 	maxPort = 65535
 )
 
@@ -101,7 +101,7 @@ func (s *Server) Address() string {
 // parser acts as a stateful accumulator for configuration parsing errors.
 type parser struct {
 	lookup func(key string) (string, bool)
-	errs   []error
+	err    error
 }
 
 // String retrieves the value associated with the provided key.
@@ -196,10 +196,10 @@ func (p *parser) Timeout(key string, fallback time.Duration) time.Duration {
 
 // Err returns all accumulated parsing errors bundled into a single error.
 func (p *parser) Err() error {
-	return errors.Join(p.errs...)
+	return p.err
 }
 
-// addErrorf formats and appends an error to the parser's internal error list.
+// addErrorf formats and merges an error into the parser's internal error state.
 func (p *parser) addErrorf(format string, args ...any) {
-	p.errs = append(p.errs, fmt.Errorf(format, args...))
+	p.err = errors.Join(p.err, fmt.Errorf(format, args...))
 }
