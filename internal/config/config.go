@@ -104,7 +104,7 @@ type parser struct {
 	err    error
 }
 
-// String retrieves the value associated with the provided key.
+// String retrieves the string value associated with the provided key.
 //
 // It returns the fallback if the key is unset.
 func (p *parser) String(key, fallback string) string {
