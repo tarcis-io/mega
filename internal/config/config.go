@@ -1,7 +1,7 @@
 // Package config provides configuration loading and validation for the application.
 //
 // It reads settings from environment variables, applies sensible defaults,
-// and ensures all values are correctly typed and validated before the application starts.
+// and ensures all values are correctly typed and validated.
 package config
 
 import (
@@ -91,7 +91,7 @@ type Server struct {
 	ShutdownTimeout   time.Duration
 }
 
-// Address returns the formatted [host]:port string suitable for binding the HTTP server.
+// Address returns the formatted <host>:port string suitable for binding the HTTP server.
 //
 // It is IPv6-safe.
 func (s *Server) Address() string {
@@ -108,7 +108,7 @@ type parser struct {
 //
 // It returns the fallback if the key is unset.
 func (p *parser) String(key, fallback string) string {
-	if val, ok := p.lookup(key); ok {
+	if val, ok := p.get(key); ok {
 		return val
 	}
 
@@ -119,7 +119,7 @@ func (p *parser) String(key, fallback string) string {
 //
 // It returns the fallback if the key is unset or fails to parse as an integer.
 func (p *parser) Int(key string, fallback int) int {
-	valStr, ok := p.lookup(key)
+	valStr, ok := p.get(key)
 	if !ok {
 		return fallback
 	}
@@ -133,12 +133,25 @@ func (p *parser) Int(key string, fallback int) int {
 	return val
 }
 
-// Host retrieves the hostname string associated with the provided key.
+// Host retrieves the hostname associated with the provided key.
 //
-// It returns the fallback if the key is unset or contains whitespace.
+// It returns the fallback if the key is unset or contains schemes, ports, or whitespaces.
 func (p *parser) Host(key, fallback string) string {
-	val, ok := p.lookup(key)
+	val, ok := p.get(key)
 	if !ok {
+		return fallback
+	}
+
+	val = strings.TrimPrefix(val, "[")
+	val = strings.TrimSuffix(val, "]")
+
+	if strings.Contains(val, "://") {
+		p.addErrorf("invalid host %s=%q: must not contain a URL scheme (e.g., http://)", key, val)
+		return fallback
+	}
+
+	if _, _, err := net.SplitHostPort(val); err == nil {
+		p.addErrorf("invalid host %s=%q: must not include a port", key, val)
 		return fallback
 	}
 
@@ -152,7 +165,7 @@ func (p *parser) Host(key, fallback string) string {
 
 // Port retrieves the network port associated with the provided key.
 //
-// It returns the fallback if the key is unset, fails to parse, or falls outside the valid TCP/UDP range.
+// It returns the fallback if the key is unset, fails to parse as an integer, or falls outside the valid TCP/UDP range.
 func (p *parser) Port(key string, fallback int) int {
 	val := p.Int(key, fallback)
 	if val < minPort || val > maxPort {
@@ -167,9 +180,13 @@ func (p *parser) Port(key string, fallback int) int {
 //
 // It returns the fallback if the key is unset or fails to parse as a duration.
 func (p *parser) Duration(key string, fallback time.Duration) time.Duration {
-	valStr, ok := p.lookup(key)
+	valStr, ok := p.get(key)
 	if !ok {
 		return fallback
+	}
+
+	if _, err := strconv.Atoi(valStr); err == nil {
+		valStr += "s"
 	}
 
 	val, err := time.ParseDuration(valStr)
@@ -185,6 +202,7 @@ func (p *parser) Duration(key string, fallback time.Duration) time.Duration {
 //
 // It returns the fallback if the key is unset, fails to parse, or is a negative value.
 func (p *parser) Timeout(key string, fallback time.Duration) time.Duration {
+	// parse instead of calling Duration
 	val := p.Duration(key, fallback)
 	if val < 0 {
 		p.addErrorf("invalid timeout %s=%q: must not be negative", key, val.String())
@@ -202,4 +220,14 @@ func (p *parser) Err() error {
 // addErrorf formats and merges an error into the parser's internal error state.
 func (p *parser) addErrorf(format string, args ...any) {
 	p.err = errors.Join(p.err, fmt.Errorf(format, args...))
+}
+
+// get retrieves and sanitizes the environment variable value associated with the provided key.
+func (p *parser) get(key string) (string, bool) {
+	val, ok := p.lookup(key)
+	if !ok {
+		return "", false
+	}
+
+	return strings.TrimSpace(val), true
 }
