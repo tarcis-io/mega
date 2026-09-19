@@ -118,6 +118,7 @@ $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS) go.mod $(wildcard go.sum)
 clean:
 	@echo "Cleaning generated build artifacts..."
 	$(Q)rm -rf $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(WASM_MODULES)
+	$(Q)find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
 
 # Displays this help message.
 help:
