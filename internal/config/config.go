@@ -185,7 +185,7 @@ func (p *parser) Duration(key string, fallback time.Duration) time.Duration {
 		return fallback
 	}
 
-	if _, err := strconv.Atoi(valStr); err == nil {
+	if _, err := strconv.ParseFloat(valStr, 64); err == nil {
 		valStr += "s"
 	}
 
