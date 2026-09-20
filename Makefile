@@ -5,6 +5,9 @@
 # Default target to execute when no target is specified on make command.
 .DEFAULT_GOAL := all
 
+# Remove partially-written targets if a recipe fails.
+.DELETE_ON_ERROR:
+
 # Verbosity control. Run `make V=1` to see the actual commands being executed.
 V ?= 0
 ifeq ($(V),1)
@@ -13,7 +16,23 @@ else
 Q := @
 endif
 
+# --- Directory Structure ---
+
+CMD                := cmd
+CMD_WASM           := $(CMD)/wasm
+VENDOR             := vendor
+WEB                := web
+WEB_PUBLIC         := $(WEB)/public
+WEB_PUBLIC_CSS     := $(WEB_PUBLIC)/css
+WEB_PUBLIC_JS      := $(WEB_PUBLIC)/js
+WEB_PUBLIC_JS_WASM := $(WEB_PUBLIC_JS)/wasm
+WEB_PUBLIC_WASM    := $(WEB_PUBLIC)/wasm
+WEB_SRC            := $(WEB)/src
+WEB_SRC_CSS        := $(WEB_SRC)/css
+
 # --- Tooling Setup ---
+
+ifeq ($(filter clean help,$(MAKECMDGOALS)),)
 
 # Fail fast if tinygo is missing.
 TINYGO ?= tinygo
@@ -33,6 +52,8 @@ ifeq (, $(shell command -v $(TAILWINDCSS) 2> /dev/null))
 $(error Could not find tailwindcss. Is it installed correctly and in PATH?)
 endif
 
+endif
+
 # --- Configuration & Flags ---
 
 # Size-optimized WASM build, debug info stripped.
@@ -43,8 +64,10 @@ TAILWIND_FLAGS ?= --minify
 
 # --- Source Tracking ---
 
+ifeq ($(filter clean help,$(MAKECMDGOALS)),)
+
 # Directories to exclude from source tracking.
-IGNORE_DIRS := -type d \( -name .git -o -name vendor -o -path ./web/public \) -prune -o
+IGNORE_DIRS := -type d \( -name .git -o -name $(VENDOR) -o -path ./$(WEB_PUBLIC) \) -prune -o
 
 # Tracks all Go files to trigger WASM rebuilds on internal package changes.
 GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' ! -name '*_test.go' -print)
@@ -52,18 +75,7 @@ GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' ! -name '*_test.go
 # Tracks all UI files to trigger CSS rebuilds on Tailwind utility class changes.
 UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' ! -name '*_test.go' -o -name '*.tmpl' \) -print)
 
-# --- Directory Structure ---
-
-CMD                := cmd
-CMD_WASM           := $(CMD)/wasm
-WEB                := web
-WEB_PUBLIC         := $(WEB)/public
-WEB_PUBLIC_CSS     := $(WEB_PUBLIC)/css
-WEB_PUBLIC_JS      := $(WEB_PUBLIC)/js
-WEB_PUBLIC_JS_WASM := $(WEB_PUBLIC_JS)/wasm
-WEB_PUBLIC_WASM    := $(WEB_PUBLIC)/wasm
-WEB_SRC            := $(WEB)/src
-WEB_SRC_CSS        := $(WEB_SRC)/css
+endif
 
 # --- Inputs and Outputs ---
 
