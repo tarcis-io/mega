@@ -15,16 +15,19 @@ import (
 	"time"
 )
 
-// Environment variable keys and default values.
+// Environment variable keys.
 const (
-	serverHostKey              = "SERVER_HOST"
-	serverPortKey              = "SERVER_PORT"
-	serverReadTimeoutKey       = "SERVER_READ_TIMEOUT"
-	serverReadHeaderTimeoutKey = "SERVER_READ_HEADER_TIMEOUT"
-	serverWriteTimeoutKey      = "SERVER_WRITE_TIMEOUT"
-	serverIdleTimeoutKey       = "SERVER_IDLE_TIMEOUT"
-	serverShutdownTimeoutKey   = "SERVER_SHUTDOWN_TIMEOUT"
+	envServerHost              = "SERVER_HOST"
+	envServerPort              = "SERVER_PORT"
+	envServerReadTimeout       = "SERVER_READ_TIMEOUT"
+	envServerReadHeaderTimeout = "SERVER_READ_HEADER_TIMEOUT"
+	envServerWriteTimeout      = "SERVER_WRITE_TIMEOUT"
+	envServerIdleTimeout       = "SERVER_IDLE_TIMEOUT"
+	envServerShutdownTimeout   = "SERVER_SHUTDOWN_TIMEOUT"
+)
 
+// Default configuration values.
+const (
 	defaultServerHost              = ""
 	defaultServerPort              = 8080
 	defaultServerReadTimeout       = 15 * time.Second
@@ -58,22 +61,13 @@ func Load() (*Config, error) {
 	return load(os.LookupEnv)
 }
 
-// load parses the configuration using the provided lookup function.
 func load(lookup func(key string) (string, bool)) (*Config, error) {
 	p := &parser{
 		lookup: lookup,
 	}
 
 	cfg := &Config{
-		Server: Server{
-			Host:              p.Host(serverHostKey, defaultServerHost),
-			Port:              p.Port(serverPortKey, defaultServerPort),
-			ReadTimeout:       p.NonNegativeDuration(serverReadTimeoutKey, defaultServerReadTimeout),
-			ReadHeaderTimeout: p.NonNegativeDuration(serverReadHeaderTimeoutKey, defaultServerReadHeaderTimeout),
-			WriteTimeout:      p.NonNegativeDuration(serverWriteTimeoutKey, defaultServerWriteTimeout),
-			IdleTimeout:       p.NonNegativeDuration(serverIdleTimeoutKey, defaultServerIdleTimeout),
-			ShutdownTimeout:   p.NonNegativeDuration(serverShutdownTimeoutKey, defaultServerShutdownTimeout),
-		},
+		Server: loadServer(p),
 	}
 
 	if err := p.Err(); err != nil {
@@ -81,6 +75,18 @@ func load(lookup func(key string) (string, bool)) (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func loadServer(p *parser) Server {
+	return Server{
+		Host:              p.Host(envServerHost, defaultServerHost),
+		Port:              p.Port(envServerPort, defaultServerPort),
+		ReadTimeout:       p.NonNegativeDuration(envServerReadTimeout, defaultServerReadTimeout),
+		ReadHeaderTimeout: p.NonNegativeDuration(envServerReadHeaderTimeout, defaultServerReadHeaderTimeout),
+		WriteTimeout:      p.NonNegativeDuration(envServerWriteTimeout, defaultServerWriteTimeout),
+		IdleTimeout:       p.NonNegativeDuration(envServerIdleTimeout, defaultServerIdleTimeout),
+		ShutdownTimeout:   p.NonNegativeDuration(envServerShutdownTimeout, defaultServerShutdownTimeout),
+	}
 }
 
 // Server represents the HTTP server configuration.
@@ -180,7 +186,8 @@ func (p *parser) Host(key, fallback string) string {
 func (p *parser) Port(key string, fallback int) int {
 	val := p.Int(key, fallback)
 	if val < minPort || val > maxPort {
-		p.addErrorf("invalid port %s=%q: must be between %d and %d", key, strconv.Itoa(val), minPort, maxPort)
+		raw, _ := p.get(key)
+		p.addErrorf("invalid port %s=%q: must be between %d and %d", key, raw, minPort, maxPort)
 		return fallback
 	}
 
@@ -192,18 +199,19 @@ func (p *parser) Port(key string, fallback int) int {
 // If the parsed value is a unitless number, it is implicitly treated as seconds.
 // It returns the fallback if the key is unset or if the value fails to parse as a [time.Duration].
 func (p *parser) Duration(key string, fallback time.Duration) time.Duration {
-	valStr, ok := p.get(key)
+	rawStr, ok := p.get(key)
 	if !ok {
 		return fallback
 	}
 
+	valStr := rawStr
 	if _, err := strconv.ParseFloat(valStr, 64); err == nil {
 		valStr += "s"
 	}
 
 	val, err := time.ParseDuration(valStr)
 	if err != nil {
-		p.addErrorf("invalid duration %s=%q: %w", key, valStr, err)
+		p.addErrorf("invalid duration %s=%q: %w", key, rawStr, err)
 		return fallback
 	}
 
@@ -217,7 +225,8 @@ func (p *parser) Duration(key string, fallback time.Duration) time.Duration {
 func (p *parser) NonNegativeDuration(key string, fallback time.Duration) time.Duration {
 	val := p.Duration(key, fallback)
 	if val < 0 {
-		p.addErrorf("invalid duration %s=%q: must be non-negative", key, val.String())
+		raw, _ := p.get(key)
+		p.addErrorf("invalid duration %s=%q: must be non-negative", key, raw)
 		return fallback
 	}
 
