@@ -45,7 +45,7 @@ func newRouter() (*http.ServeMux, error) {
 
 func newServer(cfg *config.Config, router http.Handler) *http.Server {
 	return &http.Server{
-		Addr:              cfg.Server.Address(),
+		Addr:              cfg.Server.Addr(),
 		ReadTimeout:       cfg.Server.ReadTimeout,
 		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
 		WriteTimeout:      cfg.Server.WriteTimeout,
