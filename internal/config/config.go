@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -47,6 +48,39 @@ var hostnameRegexp = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*
 // It holds all domain-specific configuration groups required to run the application.
 type Config struct {
 	Server Server
+}
+
+// Load reads the application configuration from the system's environment variables.
+//
+// It validates all inputs and returns a joined error containing all validation failures
+// if multiple variables are malformed.
+func Load() (*Config, error) {
+	return load(os.LookupEnv)
+}
+
+// load parses the configuration using the provided lookup function.
+func load(lookup func(key string) (string, bool)) (*Config, error) {
+	p := &parser{
+		lookup: lookup,
+	}
+
+	cfg := &Config{
+		Server: Server{
+			Host:              p.Host(serverHostKey, defaultServerHost),
+			Port:              p.Port(serverPortKey, defaultServerPort),
+			ReadTimeout:       p.NonNegativeDuration(serverReadTimeoutKey, defaultServerReadTimeout),
+			ReadHeaderTimeout: p.NonNegativeDuration(serverReadHeaderTimeoutKey, defaultServerReadHeaderTimeout),
+			WriteTimeout:      p.NonNegativeDuration(serverWriteTimeoutKey, defaultServerWriteTimeout),
+			IdleTimeout:       p.NonNegativeDuration(serverIdleTimeoutKey, defaultServerIdleTimeout),
+			ShutdownTimeout:   p.NonNegativeDuration(serverShutdownTimeoutKey, defaultServerShutdownTimeout),
+		},
+	}
+
+	if err := p.Err(); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
 }
 
 // Server represents the HTTP server configuration.
@@ -97,7 +131,7 @@ func (p *parser) Int(key string, fallback int) int {
 
 	val, err := strconv.Atoi(valStr)
 	if err != nil {
-		p.addErrorf("invalid int %s=%q: must be a number", key, valStr)
+		p.addErrorf("invalid int %s=%q: must be a valid integer", key, valStr)
 		return fallback
 	}
 
