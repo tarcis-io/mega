@@ -19,8 +19,11 @@ endif
 # Runs the build unless every requested goal is metadata-only: setup, clean, rebuild, or help.
 NEED_BUILD := $(filter-out setup clean rebuild help,$(or $(MAKECMDGOALS),all))
 
-# Runs tool checks unless every requested goal is metadata-only: clean or help.
-NEED_TOOLS := $(filter-out clean help,$(or $(MAKECMDGOALS),all))
+# Requires TinyGo unless every requested goal skips WASM: build-css, clean, rebuild, or help.
+NEED_TINYGO := $(filter-out build-css clean rebuild help,$(or $(MAKECMDGOALS),all))
+
+# Requires Tailwind CSS unless every requested goal skips CSS: setup, build-wasm, clean, rebuild, or help.
+NEED_TAILWIND_CSS := $(filter-out setup build-wasm clean rebuild help,$(or $(MAKECMDGOALS),all))
 
 # --- Directory Structure ---
 
@@ -38,24 +41,28 @@ WEB_SRC_CSS        := $(WEB_SRC)/css
 
 # --- Tooling Setup ---
 
-ifneq ($(NEED_TOOLS),)
+ifneq ($(NEED_TINYGO),)
 
-# Fail fast if tinygo is missing.
+# Fail fast if TinyGo is missing.
 TINYGO ?= tinygo
 ifeq (, $(shell command -v $(TINYGO) 2> /dev/null))
-$(error Could not find tinygo. Is it installed correctly and in PATH?)
+$(error Could not find TinyGo. Is it installed correctly and in PATH?)
 endif
 
 # Fail fast if TINYGOROOT is not set.
 TINYGOROOT := $(shell $(TINYGO) env TINYGOROOT 2>/dev/null)
 ifeq ($(TINYGOROOT),)
-$(error Could not determine TINYGOROOT. Is tinygo configured correctly?)
+$(error Could not determine TINYGOROOT. Is TinyGo configured correctly?)
 endif
 
-# Fail fast if tailwindcss is missing.
-TAILWINDCSS ?= tailwindcss
-ifeq (, $(shell command -v $(TAILWINDCSS) 2> /dev/null))
-$(error Could not find tailwindcss. Is it installed correctly and in PATH?)
+endif
+
+ifneq ($(NEED_TAILWIND_CSS),)
+
+# Fail fast if Tailwind CSS is missing.
+TAILWIND_CSS ?= tailwindcss
+ifeq (, $(shell command -v $(TAILWIND_CSS) 2> /dev/null))
+$(error Could not find Tailwind CSS. Is it installed correctly and in PATH?)
 endif
 
 endif
@@ -66,19 +73,19 @@ endif
 TINYGO_FLAGS ?= -target=wasm -opt=s -panic=trap -no-debug
 
 # Minifies output CSS.
-TAILWIND_FLAGS ?= --minify
+TAILWIND_CSS_FLAGS ?= --minify
 
 # --- Source Tracking ---
 
 ifneq ($(NEED_BUILD),)
 
 # Directories to exclude from source tracking.
-IGNORE_DIRS := -type d \( -name .git -o -name $(VENDOR) -o -path ./$(WEB_PUBLIC) \) -prune -o
+IGNORE_DIRS := -type d \( -name .git -o -name $(VENDOR) -o -path "./$(WEB_PUBLIC)" \) -prune -o
 
 # Tracks all Go files to trigger WASM rebuilds on internal package changes.
 GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' ! -name '*_test.go' -print)
 
-# Tracks all UI files to trigger CSS rebuilds on Tailwind utility class changes.
+# Tracks all UI files to trigger CSS rebuilds on Tailwind CSS utility class changes.
 UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' ! -name '*_test.go' -o -name '*.tmpl' -o -name '*.css' \) -print)
 
 endif
@@ -121,7 +128,7 @@ build-css: $(APP_CSS_OUTPUT)
 $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 	@echo "Compiling CSS..."
 	$(Q)mkdir -p $(@D)
-	$(Q)$(TAILWINDCSS) $(TAILWIND_FLAGS) -i $< -o $@
+	$(Q)$(TAILWIND_CSS) $(TAILWIND_CSS_FLAGS) -i $< -o $@
 
 # Compiles the Go packages to WebAssembly modules.
 build-wasm: $(WASM_MODULES)
@@ -136,7 +143,7 @@ $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(CMD_WASM)/%/main.go $(GO_SRCS) go.
 clean:
 	@echo "Cleaning generated build artifacts..."
 	$(Q)rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(WEB_PUBLIC_WASM)/*.wasm
-	$(Q)find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
+	$(Q)find $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM) -type d -empty -delete 2>/dev/null || true
 
 # Cleans the project and builds it from scratch.
 rebuild: clean
