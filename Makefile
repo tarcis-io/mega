@@ -16,6 +16,9 @@ else
 Q := @
 endif
 
+# Runs the build unless every requested goal is metadata-only (clean, help, or rebuild).
+NEED_BUILD := $(filter-out clean help rebuild,$(or $(MAKECMDGOALS),all))
+
 # --- Directory Structure ---
 
 CMD                := cmd
@@ -32,7 +35,7 @@ WEB_SRC_CSS        := $(WEB_SRC)/css
 
 # --- Tooling Setup ---
 
-ifeq ($(filter clean help rebuild,$(MAKECMDGOALS)),)
+ifneq ($(NEED_BUILD),)
 
 # Fail fast if tinygo is missing.
 TINYGO ?= tinygo
@@ -64,7 +67,7 @@ TAILWIND_FLAGS ?= --minify
 
 # --- Source Tracking ---
 
-ifeq ($(filter clean help rebuild,$(MAKECMDGOALS)),)
+ifneq ($(NEED_BUILD),)
 
 # Directories to exclude from source tracking.
 IGNORE_DIRS := -type d \( -name .git -o -name $(VENDOR) -o -path ./$(WEB_PUBLIC) \) -prune -o
@@ -129,7 +132,7 @@ $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS) go.mod $(wildcard go.sum)
 # Removes all generated build artifacts and output directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
-	$(Q)rm -rf $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(WASM_MODULES)
+	$(Q)rm -rf $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM)
 	$(Q)find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
 
 # Cleans the project and builds it from scratch.
@@ -141,9 +144,6 @@ rebuild:
 # Displays this help message.
 help:
 	@echo "Usage: make [target] [V=1 (for verbose output)]"
-	@echo ""
-	@echo "Note: do not combine 'clean' or 'help' with build targets in one call."
-	@echo "Run them separately, e.g. 'make clean && make build'."
 	@echo ""
 	@echo "Targets:"
 	@awk '/^[a-zA-Z0-9_-]+:/ { \
