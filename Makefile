@@ -16,8 +16,8 @@ else
 Q := @
 endif
 
-# Runs the build unless every requested goal is metadata-only: clean, help, or rebuild.
-NEED_BUILD := $(filter-out clean help rebuild,$(or $(MAKECMDGOALS),all))
+# Runs the build unless every requested goal is metadata-only: setup, clean, rebuild, or help.
+NEED_BUILD := $(filter-out setup clean rebuild help,$(or $(MAKECMDGOALS),all))
 
 # Runs tool checks unless every requested goal is metadata-only: clean or help.
 NEED_TOOLS := $(filter-out clean help,$(or $(MAKECMDGOALS),all))
@@ -79,7 +79,7 @@ IGNORE_DIRS := -type d \( -name .git -o -name $(VENDOR) -o -path ./$(WEB_PUBLIC)
 GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' ! -name '*_test.go' -print)
 
 # Tracks all UI files to trigger CSS rebuilds on Tailwind utility class changes.
-UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' ! -name '*_test.go' -o -name '*.tmpl' \) -print)
+UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' ! -name '*_test.go' -o -name '*.tmpl' -o -name '*.css' \) -print)
 
 endif
 
@@ -102,9 +102,6 @@ WASM_MODULES := $(patsubst $(CMD_WASM)/%/main.go,$(WEB_PUBLIC_WASM)/%.wasm,$(wil
 # Default target: sets up the environment and compiles all assets.
 all: setup build
 
-# Executes all compilation targets for the application.
-build: build-css build-wasm
-
 # Prepares dependencies for the application.
 setup: $(WASM_EXEC_JS_OUTPUT)
 
@@ -113,6 +110,9 @@ $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 	@echo "Setting up wasm_exec.js..."
 	$(Q)mkdir -p $(@D)
 	$(Q)cp $< $@
+
+# Executes all compilation targets for the application.
+build: build-css build-wasm
 
 # Compiles the styles to output a CSS file.
 build-css: $(APP_CSS_OUTPUT)
@@ -127,22 +127,21 @@ $(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 build-wasm: $(WASM_MODULES)
 
 # Compiles WebAssembly modules. Tracks all Go files to catch internal package changes.
-$(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(GO_SRCS) go.mod $(wildcard go.sum)
+$(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(CMD_WASM)/%/main.go $(GO_SRCS) go.mod $(wildcard go.sum)
 	@echo "Compiling $* WebAssembly module..."
 	$(Q)mkdir -p $(@D)
-	$(Q)$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(CMD_WASM)/$*
+	$(Q)$(TINYGO) build $(TINYGO_FLAGS) -o $@ $<
 
 # Removes all generated build artifacts and output directories.
 clean:
 	@echo "Cleaning generated build artifacts..."
-	$(Q)rm -rf $(WEB_PUBLIC_CSS) $(WEB_PUBLIC_JS_WASM) $(WEB_PUBLIC_WASM)
+	$(Q)rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(WEB_PUBLIC_WASM)/*.wasm
 	$(Q)find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
 
 # Cleans the project and builds it from scratch.
-rebuild:
+rebuild: clean
 	@echo "Rebuilding project..."
-	$(Q)$(MAKE) clean
-	$(Q)$(MAKE) build
+	$(Q)$(MAKE) all
 
 # Displays this help message.
 help:
