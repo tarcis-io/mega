@@ -32,7 +32,7 @@ WEB_SRC_CSS        := $(WEB_SRC)/css
 
 # --- Tooling Setup ---
 
-ifeq ($(filter clean help,$(MAKECMDGOALS)),)
+ifeq ($(filter clean help rebuild,$(MAKECMDGOALS)),)
 
 # Fail fast if tinygo is missing.
 TINYGO ?= tinygo
@@ -64,7 +64,7 @@ TAILWIND_FLAGS ?= --minify
 
 # --- Source Tracking ---
 
-ifeq ($(filter clean help,$(MAKECMDGOALS)),)
+ifeq ($(filter clean help rebuild,$(MAKECMDGOALS)),)
 
 # Directories to exclude from source tracking.
 IGNORE_DIRS := -type d \( -name .git -o -name $(VENDOR) -o -path ./$(WEB_PUBLIC) \) -prune -o
@@ -89,7 +89,7 @@ WASM_EXEC_JS_OUTPUT := $(WEB_PUBLIC_JS_WASM)/wasm_exec.js
 WASM_MODULES := $(patsubst $(CMD_WASM)/%/main.go,$(WEB_PUBLIC_WASM)/%.wasm,$(wildcard $(CMD_WASM)/*/main.go))
 
 # Non-file action aliases.
-.PHONY: all setup build build-css build-wasm clean help
+.PHONY: all setup build build-css build-wasm clean rebuild help
 
 # --- Targets ---
 
@@ -132,9 +132,18 @@ clean:
 	$(Q)rm -rf $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(WASM_MODULES)
 	$(Q)find $(WEB_PUBLIC) -type d -empty -delete 2>/dev/null || true
 
+# Cleans the project and builds it from scratch.
+rebuild:
+	@echo "Rebuilding project..."
+	$(Q)$(MAKE) clean
+	$(Q)$(MAKE) build
+
 # Displays this help message.
 help:
 	@echo "Usage: make [target] [V=1 (for verbose output)]"
+	@echo ""
+	@echo "Note: do not combine 'clean' or 'help' with build targets in one call."
+	@echo "Run them separately, e.g. 'make clean && make build'."
 	@echo ""
 	@echo "Targets:"
 	@awk '/^[a-zA-Z0-9_-]+:/ { \
