@@ -8,6 +8,9 @@
 # Remove partially-written targets if a recipe fails.
 .DELETE_ON_ERROR:
 
+# Suppress "Entering/Leaving directory" noise from the recursive `make rebuild`.
+MAKEFLAGS += --no-print-directory
+
 # Verbosity control. Run `make V=1` to see the actual commands being executed.
 V ?= 0
 ifeq ($(V),1)
@@ -69,7 +72,7 @@ endif
 
 # --- Configuration & Flags ---
 
-# Size-optimized WASM build, debug info stripped.
+# Size-optimized WASM build, panics compiled to a trap instruction, and debug info stripped.
 TINYGO_FLAGS ?= -target=wasm -opt=s -panic=trap -no-debug
 
 # Minifies output CSS.
@@ -107,7 +110,7 @@ WASM_MODULES := $(patsubst $(CMD_WASM)/%/main.go,$(WEB_PUBLIC_WASM)/%.wasm,$(wil
 # --- Targets ---
 
 # Default target: sets up the environment and compiles all assets.
-all: setup build
+all: build
 
 # Prepares dependencies for the application.
 setup: $(WASM_EXEC_JS_OUTPUT)
@@ -119,7 +122,7 @@ $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 	$(Q)cp $< $@
 
 # Executes all compilation targets for the application.
-build: build-css build-wasm
+build: setup build-css build-wasm
 
 # Compiles the styles to output a CSS file.
 build-css: $(APP_CSS_OUTPUT)
