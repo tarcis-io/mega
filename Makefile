@@ -19,7 +19,7 @@ else
 Q := @
 endif
 
-# Runs the build unless every requested goal is metadata-only: setup, clean, rebuild, or help.
+# Tracks source files for compilation unless every requested goal skips it: setup, clean, rebuild, or help.
 NEED_BUILD := $(filter-out setup clean rebuild help,$(or $(MAKECMDGOALS),all))
 
 # Requires TinyGo unless every requested goal skips WASM: build-css, clean, rebuild, or help.
@@ -83,13 +83,16 @@ TAILWIND_CSS_FLAGS ?= --minify
 ifneq ($(NEED_BUILD),)
 
 # Directories to exclude from source tracking.
-IGNORE_DIRS := -type d \( -name .git -o -name $(VENDOR) -o -path "./$(WEB_PUBLIC)" \) -prune -o
+IGNORE_DIRS := -type d \( -name .git -o -name $(VENDOR) -o -path "*/$(WEB_PUBLIC)" \) -prune -o
 
 # Tracks all Go files to trigger WASM rebuilds on internal package changes.
 GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' ! -name '*_test.go' -print)
 
 # Tracks all UI files to trigger CSS rebuilds on Tailwind CSS utility class changes.
 UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' ! -name '*_test.go' -o -name '*.tmpl' -o -name '*.css' \) -print)
+
+# Tracks for Tailwind CSS configuration to trigger CSS rebuilds on theme changes.
+TAILWIND_CSS_CONFIG := $(wildcard tailwind.config.*)
 
 endif
 
@@ -121,14 +124,14 @@ $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 	$(Q)mkdir -p $(@D)
 	$(Q)cp $< $@
 
-# Executes all compilation targets for the application.
+# Prepares dependencies and executes all compilation targets for the application.
 build: setup build-css build-wasm
 
 # Compiles the styles to output a CSS file.
 build-css: $(APP_CSS_OUTPUT)
 
 # Compiles Tailwind CSS. Tracks UI files to catch utility class changes.
-$(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
+$(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS) $(TAILWIND_CSS_CONFIG)
 	@echo "Compiling CSS..."
 	$(Q)mkdir -p $(@D)
 	$(Q)$(TAILWIND_CSS) $(TAILWIND_CSS_FLAGS) -i $< -o $@
