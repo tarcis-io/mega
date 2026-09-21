@@ -16,8 +16,11 @@ else
 Q := @
 endif
 
-# Runs the build unless every requested goal is metadata-only (clean, help, or rebuild).
+# Runs the build unless every requested goal is metadata-only: clean, help, or rebuild.
 NEED_BUILD := $(filter-out clean help rebuild,$(or $(MAKECMDGOALS),all))
+
+# Runs tool checks unless every requested goal is metadata-only: clean or help.
+NEED_TOOLS := $(filter-out clean help,$(or $(MAKECMDGOALS),all))
 
 # --- Directory Structure ---
 
@@ -35,7 +38,7 @@ WEB_SRC_CSS        := $(WEB_SRC)/css
 
 # --- Tooling Setup ---
 
-ifneq ($(NEED_BUILD),)
+ifneq ($(NEED_TOOLS),)
 
 # Fail fast if tinygo is missing.
 TINYGO ?= tinygo
