@@ -1,6 +1,7 @@
 # Makefile for the Mega application.
 #
 # Automates the setup and compilation of web assets and WebAssembly modules.
+# Requires GNU Make, TinyGo, and the Tailwind CSS v4 CLI.
 
 # Default target to execute when no target is given on the command line.
 .DEFAULT_GOAL := all
@@ -27,6 +28,11 @@ NEED_TINYGO := $(filter-out build-css clean rebuild help,$(or $(MAKECMDGOALS),al
 
 # Requires Tailwind CSS unless every requested goal skips CSS: setup, build-wasm, clean, rebuild, or help.
 NEED_TAILWIND_CSS := $(filter-out setup build-wasm clean rebuild help,$(or $(MAKECMDGOALS),all))
+
+# Enforce execution order by making all other targets depend on clean (e.g., `make -j clean build`).
+ifneq ($(filter clean,$(MAKECMDGOALS)),)
+$(filter-out clean,$(MAKECMDGOALS)): clean
+endif
 
 # --- Directory Structure ---
 
@@ -109,7 +115,7 @@ WASM_MODULES := $(patsubst $(CMD_WASM)/%/main.go,$(WEB_PUBLIC_WASM)/%.wasm,$(wil
 
 # --- Targets ---
 
-# Default target: sets up the environment and compiles all assets.
+# Default target: builds all web assets.
 all: build
 
 # Prepares dependencies for the application.
@@ -142,7 +148,7 @@ $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(CMD_WASM)/%/main.go $(GO_SRCS) go.
 	$(Q)mkdir -p $(@D)
 	$(Q)$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(<D)
 
-# Removes all generated build artifacts and output directories.
+# Removes generated artifacts and any output directories left empty.
 clean:
 	@echo "Cleaning generated build artifacts..."
 	$(Q)rm -f $(APP_CSS_OUTPUT) $(WASM_EXEC_JS_OUTPUT) $(WEB_PUBLIC_WASM)/*.wasm
