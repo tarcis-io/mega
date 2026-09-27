@@ -91,9 +91,6 @@ GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' ! -name '*_test.go
 # Tracks all UI files to trigger CSS rebuilds on Tailwind CSS utility class changes.
 UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' ! -name '*_test.go' -o -name '*.tmpl' -o -name '*.css' \) -print)
 
-# Tracks the Tailwind CSS configuration to trigger CSS rebuilds on theme changes.
-TAILWIND_CSS_CONFIG := $(wildcard tailwind.config.*)
-
 endif
 
 # --- Inputs and Outputs ---
@@ -131,7 +128,7 @@ build: setup build-css build-wasm
 build-css: $(APP_CSS_OUTPUT)
 
 # Compiles Tailwind CSS. Tracks UI files to catch utility class changes.
-$(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS) $(TAILWIND_CSS_CONFIG)
+$(APP_CSS_OUTPUT): $(APP_CSS_INPUT) $(UI_SRCS)
 	@echo "Compiling CSS..."
 	$(Q)mkdir -p $(@D)
 	$(Q)$(TAILWIND_CSS) $(TAILWIND_CSS_FLAGS) -i $< -o $@
