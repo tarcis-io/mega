@@ -2,7 +2,7 @@
 #
 # Automates the setup and compilation of web assets and WebAssembly modules.
 
-# Default target to execute when no target is specified on make command.
+# Default target to execute when no target is given on the command line.
 .DEFAULT_GOAL := all
 
 # Remove partially-written targets if a recipe fails.
@@ -85,13 +85,13 @@ ifneq ($(NEED_BUILD),)
 # Directories to exclude from source tracking.
 IGNORE_DIRS := -type d \( -name .git -o -name $(VENDOR) -o -path "*/$(WEB_PUBLIC)" \) -prune -o
 
-# Tracks all Go files to trigger WASM rebuilds on internal package changes.
+# Tracks all non-test Go files to trigger WASM rebuilds on internal package changes.
 GO_SRCS := $(shell find . $(IGNORE_DIRS) -type f -name '*.go' ! -name '*_test.go' -print)
 
 # Tracks all UI files to trigger CSS rebuilds on Tailwind CSS utility class changes.
 UI_SRCS := $(shell find . $(IGNORE_DIRS) -type f \( -name '*.go' ! -name '*_test.go' -o -name '*.tmpl' -o -name '*.css' \) -print)
 
-# Tracks for Tailwind CSS configuration to trigger CSS rebuilds on theme changes.
+# Tracks the Tailwind CSS configuration to trigger CSS rebuilds on theme changes.
 TAILWIND_CSS_CONFIG := $(wildcard tailwind.config.*)
 
 endif
@@ -118,7 +118,7 @@ all: build
 # Prepares dependencies for the application.
 setup: $(WASM_EXEC_JS_OUTPUT)
 
-# Copies the WebAssembly execution script from TinyGo if it doesn't exist or is updated.
+# Copies the WebAssembly execution script from TinyGo if it's missing or older than TinyGo's copy.
 $(WASM_EXEC_JS_OUTPUT): $(WASM_EXEC_JS_INPUT)
 	@echo "Setting up wasm_exec.js..."
 	$(Q)mkdir -p $(@D)
@@ -143,7 +143,7 @@ build-wasm: $(WASM_MODULES)
 $(WASM_MODULES): $(WEB_PUBLIC_WASM)/%.wasm: $(CMD_WASM)/%/main.go $(GO_SRCS) go.mod $(wildcard go.sum)
 	@echo "Compiling $* WebAssembly module..."
 	$(Q)mkdir -p $(@D)
-	$(Q)$(TINYGO) build $(TINYGO_FLAGS) -o $@ $<
+	$(Q)$(TINYGO) build $(TINYGO_FLAGS) -o $@ ./$(<D)
 
 # Removes all generated build artifacts and output directories.
 clean:
