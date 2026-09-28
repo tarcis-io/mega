@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -43,51 +42,8 @@ const (
 	maxPort = 65535
 )
 
-// hostnameRegexp is the expression for network hostname validation.
+// hostnameRegexp is the regular expression for network hostname validation.
 var hostnameRegexp = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])(\.[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])*$`)
-
-// Config represents the top-level application configuration.
-//
-// It holds all domain-specific configuration groups required to run the application.
-type Config struct {
-	Server Server
-}
-
-// Load reads the application configuration from the system's environment variables.
-//
-// It validates all inputs and returns a joined error containing all validation failures
-// if multiple variables are malformed.
-func Load() (*Config, error) {
-	return load(os.LookupEnv)
-}
-
-func load(lookup func(key string) (string, bool)) (*Config, error) {
-	p := &parser{
-		lookup: lookup,
-	}
-
-	cfg := &Config{
-		Server: loadServer(p),
-	}
-
-	if err := p.Err(); err != nil {
-		return nil, err
-	}
-
-	return cfg, nil
-}
-
-func loadServer(p *parser) Server {
-	return Server{
-		Host:              p.Host(envServerHost, defaultServerHost),
-		Port:              p.Port(envServerPort, defaultServerPort),
-		ReadTimeout:       p.NonNegativeDuration(envServerReadTimeout, defaultServerReadTimeout),
-		ReadHeaderTimeout: p.NonNegativeDuration(envServerReadHeaderTimeout, defaultServerReadHeaderTimeout),
-		WriteTimeout:      p.NonNegativeDuration(envServerWriteTimeout, defaultServerWriteTimeout),
-		IdleTimeout:       p.NonNegativeDuration(envServerIdleTimeout, defaultServerIdleTimeout),
-		ShutdownTimeout:   p.NonNegativeDuration(envServerShutdownTimeout, defaultServerShutdownTimeout),
-	}
-}
 
 // Server represents the HTTP server configuration.
 //
@@ -102,46 +58,17 @@ type Server struct {
 	ShutdownTimeout   time.Duration
 }
 
-// Addr returns the formatted <host>:port string suitable for binding the HTTP server.
+// Addr returns the network address in the format <host>:port.
 //
 // It is IPv6-safe.
 func (s *Server) Addr() string {
 	return net.JoinHostPort(s.Host, strconv.Itoa(s.Port))
 }
 
-// parser acts as a stateful accumulator for configuration parsing errors.
+// parser holds the environment lookup function and accumulates validation errors.
 type parser struct {
-	lookup func(key string) (string, bool)
+	lookup func(string) (string, bool)
 	err    error
-}
-
-// String retrieves the string value associated with the provided key.
-//
-// It returns the fallback if the key is unset.
-func (p *parser) String(key, fallback string) string {
-	if val, ok := p.get(key); ok {
-		return val
-	}
-
-	return fallback
-}
-
-// Int retrieves the integer value associated with the provided key.
-//
-// It returns the fallback if the key is unset or if the value fails to parse as an integer.
-func (p *parser) Int(key string, fallback int) int {
-	valStr, ok := p.get(key)
-	if !ok {
-		return fallback
-	}
-
-	val, err := strconv.Atoi(valStr)
-	if err != nil {
-		p.addErrorf("invalid int %s=%q: must be a valid integer", key, valStr)
-		return fallback
-	}
-
-	return val
 }
 
 // Host retrieves the network hostname associated with the provided key.
@@ -149,88 +76,69 @@ func (p *parser) Int(key string, fallback int) int {
 // It returns the fallback if the key is unset or if the value contains schemes, ports,
 // or invalid characters.
 func (p *parser) Host(key, fallback string) string {
-	valStr, ok := p.get(key)
-	if !ok {
-		return fallback
-	}
+	return p.parse(key, fallback, func(s string) (string, error) {
+		val := s
 
-	val := valStr
-	if strings.HasPrefix(val, "[") && strings.HasSuffix(val, "]") {
-		val = val[1 : len(val)-1]
-	}
-
-	if strings.Contains(val, "://") {
-		p.addErrorf("invalid host %s=%q: must not contain a URL scheme (e.g., http://)", key, valStr)
-		return fallback
-	}
-
-	if _, _, err := net.SplitHostPort(val); err == nil {
-		p.addErrorf("invalid host %s=%q: must not include a port", key, valStr)
-		return fallback
-	}
-
-	if net.ParseIP(val) == nil {
-		if !hostnameRegexp.MatchString(val) {
-			p.addErrorf("invalid host %s=%q: must be a valid IP address or a hostname", key, valStr)
-			return fallback
+		if val == "" {
+			return val, nil
 		}
-	}
 
-	return val
+		if strings.HasPrefix(val, "[") && strings.HasSuffix(val, "]") {
+			val = val[1 : len(val)-1]
+		}
+
+		if strings.Contains(val, "://") {
+			return "", errors.New("must not contain a URL scheme (e.g., http://)")
+		}
+
+		if _, _, err := net.SplitHostPort(val); err == nil {
+			return "", errors.New("must not include a port")
+		}
+
+		if net.ParseIP(val) == nil && !hostnameRegexp.MatchString(val) {
+			return "", errors.New("must be a valid IP address or an RFC 1123 hostname")
+		}
+
+		return val, nil
+	})
 }
 
 // Port retrieves the network port associated with the provided key.
 //
-// It returns the fallback if the key is unset or if the value fails to parse as an integer,
+// It returns the fallback if the key is unset, if the value fails to parse as an integer,
 // or if it falls outside the valid TCP/UDP range.
 func (p *parser) Port(key string, fallback int) int {
-	val := p.Int(key, fallback)
-	if val < minPort || val > maxPort {
-		raw, _ := p.get(key)
-		p.addErrorf("invalid port %s=%q: must be between %d and %d", key, raw, minPort, maxPort)
-		return fallback
-	}
+	return p.parse(key, fallback, func(s string) (int, error) {
+		val, err := strconv.Atoi(s)
+		if err != nil {
+			return 0, err
+		}
 
-	return val
+		if val < minPort || val > maxPort {
+			return 0, fmt.Errorf("must be between %d and %d", minPort, maxPort)
+		}
+
+		return val, nil
+	})
 }
 
-// Duration retrieves the time duration associated with the provided key.
-//
-// If the parsed value is a unitless number, it is implicitly treated as seconds.
-// It returns the fallback if the key is unset or if the value fails to parse as a [time.Duration].
-func (p *parser) Duration(key string, fallback time.Duration) time.Duration {
-	rawStr, ok := p.get(key)
-	if !ok {
-		return fallback
-	}
-
-	valStr := rawStr
-	if _, err := strconv.ParseFloat(valStr, 64); err == nil {
-		valStr += "s"
-	}
-
-	val, err := time.ParseDuration(valStr)
-	if err != nil {
-		p.addErrorf("invalid duration %s=%q: %w", key, rawStr, err)
-		return fallback
-	}
-
-	return val
-}
-
-// NonNegativeDuration retrieves the time duration associated with the provided key.
+// Timeout retrieves the time duration associated with the provided key.
 //
 // It returns the fallback if the key is unset, if the value fails to parse as a [time.Duration],
 // or if it is negative.
-func (p *parser) NonNegativeDuration(key string, fallback time.Duration) time.Duration {
-	val := p.Duration(key, fallback)
-	if val < 0 {
-		raw, _ := p.get(key)
-		p.addErrorf("invalid duration %s=%q: must be non-negative", key, raw)
-		return fallback
-	}
+func (p *parser) Timeout(key string, fallback time.Duration) time.Duration {
+	return p.parse(key, fallback, func(s string) (time.Duration, error) {
+		val, err := time.ParseDuration(s)
+		if err != nil {
+			return 0, err
+		}
 
-	return val
+		if val < 0 {
+			return 0, errors.New("must be non-negative")
+		}
+
+		return val, nil
+	})
 }
 
 // Err returns all accumulated parsing errors bundled into a single error.
@@ -238,17 +146,21 @@ func (p *parser) Err() error {
 	return p.err
 }
 
-// get retrieves and sanitizes the environment variable value associated with the provided key.
-func (p *parser) get(key string) (string, bool) {
-	val, ok := p.lookup(key)
+// parse is a generic helper that fetches, sanitizes, and evaluates an environment variable.
+//
+// It returns the fallback if the key is unset. If the parsing or validation fails,
+// it records the error internally and returns the fallback.
+func (p *parser) parse[T any](key string, fallback T, parseFn func(string) (T, error)) T {
+	raw, ok := p.lookup(key)
 	if !ok {
-		return "", false
+		return fallback
 	}
 
-	return strings.TrimSpace(val), true
-}
+	val, err := parseFn(strings.TrimSpace(raw))
+	if err != nil {
+		p.err = errors.Join(p.err, fmt.Errorf("invalid configuration %s=%q: %v", key, raw, err))
+		return fallback
+	}
 
-// addErrorf formats and merges an error into the parser's internal error state.
-func (p *parser) addErrorf(format string, args ...any) {
-	p.err = errors.Join(p.err, fmt.Errorf(format, args...))
+	return val
 }
